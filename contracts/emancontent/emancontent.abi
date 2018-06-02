@@ -1,0 +1,71 @@
+{
+    "types":[
+        { "new_type_name":"account_name", "type":"name" },
+        { "new_type_name":"time_point_sec", "type":"time" }
+    ],
+    "structs":[
+        {
+            "name":"permission_level",
+            "base":"",
+            "fields":[
+                { "name":"actor", "type":"account_name" },
+                { "name":"permission", "type":"permission_name" }
+            ]
+        },
+        {
+            "name":"action",
+            "base":"",
+            "fields":[
+                { "name":"account", "type":"account_name" },
+                { "name":"name", "type":"action_name" },
+                { "name":"authorization", "type":"permission_level[]" },
+                { "name":"data", "type":"bytes" }
+            ]
+        },
+        {
+            "name":"trackMetadata",
+            "base":"",
+            "fields":[
+                { "name":"trackName", "type":"string" },
+                { "name":"artistName", "type":"string" }
+            ]
+        },
+        {
+            "name":"addtrack",
+            "base":"",
+            "fields":[
+                { "name":"owner", "type":"account_name" },
+                { "name":"metadata", "type":"trackMetadata" }
+            ]
+        },
+        {
+            "name":"track",
+            "base":"",
+            "fields":[
+                { "name":"id", "type":"uint64" },
+                { "name":"title", "type":"string" },
+                { "name":"metadata", "type":"trackMetadata" }
+            ]
+        },
+        
+    ],
+    "actions":[
+        {
+            "name": "addtrack",
+            "type": "addtrack",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables":[
+        {
+            "name": "track",
+            "type": "track",
+            "index_type": "i64",
+            "key_names" : ["id"],
+            "key_types" : ["uint64"]
+        } 
+    ],
+    "clauses":[
+
+    ]
+}

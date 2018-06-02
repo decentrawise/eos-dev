@@ -1,0 +1,7 @@
+#include this file in <EOS>/contracts/CMakeLists.txt
+
+add_subdirectory(emancollab)
+install(DIRECTORY emancollab DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR})
+
+add_subdirectory(emancontent)
+install(DIRECTORY emancontent DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR})

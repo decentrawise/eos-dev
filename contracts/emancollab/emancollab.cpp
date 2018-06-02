@@ -1,0 +1,106 @@
+#include "emancollab.hpp"
+#include <eosiolib/action.hpp>
+
+namespace emanate {
+
+
+void collab::propose(account_name proposer, eosio::name proposal_name, uint32_t price, const std::string &filename, approvals_t requested)
+{
+    require_auth( proposer );
+
+    proposals proptable( _self, proposer );
+    eosio_assert( proptable.find( proposal_name ) == proptable.end(), "proposal with the same name exists" );
+    eosio_assert(requested.size() > 0, "you need at least one user");
+
+    //check_auth( buffer+trx_pos, size-trx_pos, requested );
+
+    prints("");
+    prints("");
+    
+    for ( auto &request : requested ) {
+        request.accepted = false;
+    }
+    
+    proptable.emplace( proposer, [&]( auto& prop ) 
+    {
+        prop.name      = proposal_name;
+        prop.approvals = std::move(requested);
+        prop.price     = price;
+        prop.filename  = filename;
+    });
+}
+
+void collab::approve( account_name proposer, eosio::name proposal_name, account_name approver ) 
+{
+    proposals proptable( _self, proposer );
+    auto prop_it = proptable.find( proposal_name );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+
+    auto iter = std::find( prop_it->approvals.begin(), prop_it->approvals.end(), approver );
+    eosio_assert( iter != prop_it->approvals.end(), "approval is not on the list of requested approvals" );
+
+    require_auth( iter->name );
+
+    proptable.modify( prop_it, proposer, [&]( auto& mprop ) 
+    {
+        mprop.approvals.push_back( *iter );
+        mprop.approvals.erase( iter );
+    });
+}
+
+void collab::unapprove( account_name proposer, eosio::name proposal_name, account_name unapprover ) 
+{
+    proposals proptable( _self, proposer );
+    auto prop_it = proptable.find( proposal_name );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+    auto iter = std::find( prop_it->approvals.begin(), prop_it->approvals.end(), unapprover );
+    eosio_assert( iter != prop_it->approvals.end(), "no approval previously granted" );
+
+    require_auth( iter->name );
+
+    proptable.modify( prop_it, proposer, [&]( auto& mprop ) 
+    {
+        mprop.approvals.push_back( *iter );
+        mprop.approvals.erase( iter );
+    });
+}
+
+void collab::cancel( account_name proposer, eosio::name proposal_name, account_name canceler ) 
+{
+    require_auth( canceler );
+
+    proposals proptable( _self, proposer );
+    auto prop_it = proptable.find( proposal_name );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+
+    proptable.erase(prop_it);
+}
+
+void collab::exec( account_name proposer, eosio::name proposal_name, account_name executer, uint32_t seconds ) 
+{
+    require_auth( executer );
+
+    proposals proptable( _self, proposer );
+    auto prop_it = proptable.find( proposal_name );
+    eosio_assert( prop_it != proptable.end(), "proposal not found" );
+
+    auto trx = eosio::transaction();
+    
+    uint32_t percentage = 100;
+    uint64_t totalPayment = prop_it->price * seconds;
+    for( const collab_data &data : prop_it->approvals ) 
+    {
+        percentage -= data.percentage;
+        eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, data.name, eosio::asset(totalPayment * data.percentage / 100, S(4, EMA)), "" } );
+        trx.actions.emplace_back(std::move(action));
+    }
+    
+    eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, proposer, eosio::asset(totalPayment * percentage / 100, S(4, EMA)), "" } );
+    trx.actions.emplace_back(std::move(action));
+
+    trx.send(0, executer);
+}
+
+} /// namespace eosio
+
+EOSIO_ABI( emanate::collab, (propose)(approve)(unapprove)(cancel)(exec) )
