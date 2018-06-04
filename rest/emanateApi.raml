@@ -14,11 +14,11 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "from": "colabuser1",           //  name of the account proposing the collaboration
-                        "name": "contract1",            //  name of the contract
-                        "price": 10000,                 //  price per second
-                        "filename": "some_file_name",   //  the result filename of the collaboration
-                        "partners": [                   //  needs at least one parner
+                        "proposer": "collabuser1",              //  name of the account proposing the collaboration
+                        "proposal_name": "contract1",           //  name of the contract
+                        "price": 10000,                         //  price per second
+                        "filename": "some_final_file_name",     //  the result filename of the collaboration
+                        "requested": [                          //  needs at least one parner
                             {
                                 "name": "colabuser2",           //  name of the collaboration partner account
                                 "percentage": 10                //  percentage of the royalties for this partner
@@ -26,7 +26,7 @@ protocols: [HTTP]
                                 "accepted": 0                   //  Should be ignored but must exist for now
                             }
                         ]
-                    }
+                    }                
         responses:
             200:
                 body:

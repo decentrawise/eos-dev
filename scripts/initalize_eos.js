@@ -1,6 +1,7 @@
 "use strict";
 
-var Eos = require('eosjs') // Eos = require('./src')
+require('./environment.js');
+var Eos = require('eosjs')
 let {ecc} = Eos.modules
 var execSync = require('child_process').execSync;
 var fs = require("fs");
@@ -16,7 +17,7 @@ function sleep(secs) {
 
 class EOSClient {
     constructor() {
-        this.path = 'cleos';
+        this.path = path.join(process.env.EOS_BIN, 'cleos');
         this.walletPath = process.env.EOS_WALLET_INFO;
         this.eosContractsPath = process.env.EOS_CONTRACTS
         this.userContractsPath = process.env.USER_CONTRACTS

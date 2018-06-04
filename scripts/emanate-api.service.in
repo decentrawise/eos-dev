@@ -1,0 +1,14 @@
+[Unit]
+Description=Emanate API daemon
+After=network.target
+
+[Service]
+Type=simple
+User=user
+WorkingDirectory={{PATH_TO_EMANATE_REST_API}}
+ExecStart={{PATH_TO_EMANATE_REST_API}}/emanate_rest_server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

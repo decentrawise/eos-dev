@@ -1,27 +1,8 @@
 {
     "types":[
-        { "new_type_name":"account_name", "type":"name" },
-        { "new_type_name":"time_point_sec", "type":"time" }
+        { "new_type_name":"account_name", "type":"name" }
     ],
     "structs":[
-        {
-            "name":"permission_level",
-            "base":"",
-            "fields":[
-                { "name":"actor", "type":"account_name" },
-                { "name":"permission", "type":"permission_name" }
-            ]
-        },
-        {
-            "name":"action",
-            "base":"",
-            "fields":[
-                { "name":"account", "type":"account_name" },
-                { "name":"name", "type":"action_name" },
-                { "name":"authorization", "type":"permission_level[]" },
-                { "name":"data", "type":"bytes" }
-            ]
-        },
         {
             "name":"trackMetadata",
             "base":"",
@@ -46,8 +27,7 @@
                 { "name":"title", "type":"string" },
                 { "name":"metadata", "type":"trackMetadata" }
             ]
-        },
-        
+        }        
     ],
     "actions":[
         {

@@ -1,5 +1,6 @@
 "use strict";
 
+require('../scripts/environment.js');
 var fs = require("fs");
 var path = require('path');
 var Eos = require('eosjs');
@@ -8,13 +9,15 @@ var cors = require('cors');
 const app = express();
 var bodyParser = require('body-parser');
 
+var port = 8585
+
 app.use(bodyParser.json());
 app.use(cors());
 
 function getKeyPair(accountName, level) {
 
     var result = {};
-    var walletPath = path.join(process.env.HOME, 'wallet_info');
+    var walletPath = process.env.EOS_WALLET_INFO;
     
     if( level == null ) {
         level = 'active';
@@ -82,7 +85,12 @@ function getEOSConfig() {
             getKeyPair('user1').private,
             getKeyPair('user2').private,
             getKeyPair('user3').private,
-        ]
+        ],
+        expireInSeconds: 60,
+        broadcast: true,
+        debug: false, // API and transactions
+        sign: true,
+        chainId: null // 32 byte (64 char) hex string        
     }
 }
 
@@ -94,7 +102,7 @@ function permissions(user, level) {
 }
 
 const config = getEOSConfig();
-var eos = Eos.Testnet(config);
+var eos = Eos(config);
 
 app.get('/', (req, res) => res.send('Welcome to the Emanate API<p><a href="/api">Documentation<a/>'))
 
@@ -105,10 +113,10 @@ app.get('/api', function(req, res) {
 
 app.post('/propose', (req, res) => {
     var data = req.body;
-    const options = eosCallOptions(["emancollab"], [permissions("emancollab"), permissions(data.name)]);
+    const options = eosCallOptions(["emancollab"], [permissions("emancollab"), permissions(data.proposer)]);
 
     eos.contract('emancollab', options).then(contract => {
-        contract.propose(data.from, data.name, data.price, data.filename, data.partners).then(function() { 
+        contract.propose(data).then(function() { 
             res.send(resultOk()); 
         }).catch(error => {
             res.send(resultError(error));
@@ -123,7 +131,7 @@ app.post('/accept', bodyParser.json(), (req, res) => {
     const options = eosCallOptions(["emancollab"], [permissions("emancollab")]);
     
     eos.contract('emancollab', options).then(contract => {
-        contract.approve(data.proposer, data.name, data.from, { authorization: data.from }).then(function() {
+        contract.approve(data.proposer, data.proposal_name, data.approver, { authorization: data.approver }).then(function() {
             res.send(resultOk());
         }).catch(error => {
             res.send(resultError(error));
@@ -139,7 +147,7 @@ app.post('/reject', (req, res) => {
     const options = eosCallOptions(["emancollab"], [permissions("emancollab")]);
 
     eos.contract('emancollab', options).then(contract => {
-        contract.unapprove(data.proposer, data.name, data.from, { authorization: data.from }).then(function() { 
+        contract.unapprove(data.proposer, data.name, data.from, { authorization: data.unapprover }).then(function() { 
             res.send(resultOk());
         }).catch(error => {
             res.send(resultError(error));
@@ -186,24 +194,15 @@ app.post('/addTrack', (req, res) => {
     var data = req.body;
     const options = eosCallOptions(["emancontent"], [permissions("emancontent")]);
 
-    console.log("step 1");
     eos.contract('emancontent', options).then(contract => {
-        console.log("step 2");
         contract.addtrack(data.owner, data.metadata).then(function() { 
-            console.log("step 3");
             res.send(resultOk());
-            console.log("step 4");
         }).catch(error => {
-            console.log("step 5");
             res.send(resultError(error));
-            console.log("step 6");
         });
     }).catch(error => {
-        console.log("step 7 - " + error);
         res.send(resultError(error));
-        console.log("step 8");
     });
-    console.log("step 9");
 })
 
 app.post('/getTracks', (req, res) => {
@@ -216,4 +215,4 @@ app.post('/getTracks', (req, res) => {
     });
 })
 
-app.listen(3000, () => console.log('Example app listening on port 3000!')) 
+app.listen(port, () => console.log('Example app listening on port: ' + port)) 

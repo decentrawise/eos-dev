@@ -1,0 +1,15 @@
+[Unit]
+Description=EOS Server
+After=network.target
+
+[Service]
+Type=simple
+User=emanate
+WorkingDirectory={{PATH_TO_EOS}}
+ExecStart={{PATH_TO_EOS}}/bin/nodeos --data-dir={{PATH_TO_EOS}}/eos-data/data-dir --config-dir={{PATH_TO_EOS}}/eos-data --wallet-dir={{PATH_TO_EOS}}/eos-data/wallets --max-transaction-time=1000
+ExecStop=/usr/bin/killall nodeos
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

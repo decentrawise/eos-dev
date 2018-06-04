@@ -1,33 +1,41 @@
 #!/bin/bash
 
-if [ "$RUNTIME_DIR" == "" ]; then echo "Please define the runtime directory first"; return 1; fi
+if [ "$RUNTIME_DIR" == "" ]; then RUNTIME_DIR={{PATH_TO_EOS}}; fi
 
 DEPS_DIR=$RUNTIME_DIR/deps
 
+export EOS_DIR=$RUNTIME_DIR
 export EOS_DATA_HOME=$RUNTIME_DIR/eos-data
 export EOS_WALLET_INFO=$RUNTIME_DIR/wallet_info
-export EOS_CONTRACTS=$RUNTIME_DIR/deps/contracts
-export USER_CONTRACTS=$RUNTIME_DIR/deps/contracts
+export EOS_CONTRACTS=$RUNTIME_DIR/contracts
+export USER_CONTRACTS=$RUNTIME_DIR/contracts
 
 export BOOST_ROOT=$DEPS_DIR
 export BINARYEN_ROOT=$DEPS_DIR
+export EOS_BIN=$RUNTIME_DIR/bin
+
+EOS_NODEOS=$EOS_BIN/nodeos
+EOS_CLEOS=$EOS_BIN/cleos
+EOS_KEOSD=$EOS_BIN/keosd
+EOS_EOSIOCPP=$EOS_BIN/eosiocpp
+EOS_S2WASM=$EOS_BIN/s2wasm
 
 # Node EOS server
-alias nodeos=$RUNTIME_DIR/bin/nodeos
+alias nodeos=$EOS_NODEOS
 # Command line tool
-alias cleos=$RUNTIME_DIR/bin/cleos
+alias cleos=$EOS_CLEOS
 # Wallet daemon
-alias keosd=$RUNTIME_DIR/bin/keosd
+alias keosd=$EOS_KEOSD
 # Build tool
-alias eosiocpp=$RUNTIME_DIR/bin/eosiocpp
-alias eosio-s2wasm=$RUNTIME_DIR/bin/s2wasm
+alias eosiocpp=$EOS_EOSIOCPP
+alias eosio-s2wasm=$EOS_S2WASM
+
+server_default_params="--data-dir=$EOS_DATA_HOME/data-dir --config-dir=$EOS_DATA_HOME --wallet-dir=$EOS_DATA_HOME/wallets --max-transaction-time=1000"
 
 alias rebash="source $HOME/.bashrc"
 
-alias server_start="nodeos --data-dir=$EOS_DATA_HOME/data-dir --config=$EOS_DATA_HOME/config.ini --wallet-dir=$EOS_DATA_HOME/wallets"
-
-inita_active_key_private=5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
-inita_active_key=EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
+alias server_start="nodeos $server_default_params"
+alias server_stop="killall nodeos"
 
 function server_reset
 {
@@ -35,11 +43,31 @@ function server_reset
     killall -q nodeos
     rm -rf $EOS_WALLET_INFO/*
     rm -rf $EOS_DATA_HOME/wallets/*
-    server_start --resync-blockchain &
+    rm -rf $HOME/eosio-wallet/*
+    $EOS_NODEOS $server_default_params --delete-all-blocks &
     sleep 2
     killall -q nodeos
-    
-    server_start &
+    sleep 1
+    echo "Please start the server..."
+    #nodeos $server_default_params &
+}
+
+function server_reset_service
+{
+    service emanate-api stop
+    service eos stop
+
+    server_reset
+
+    service eos start
+    service emanate-api start
+
+    sleep 1
+
+    pushd $RUNTIME_DIR/../scripts
+    node initialize_eos.js
+    popd
+
 }
 
 # function server_initialize
@@ -74,19 +102,18 @@ function server_reset
 #     #account_create eosio userb
 # }
 
-# function get_key
-# {
-#     if [ "$3" == "" ] && [ "$2" != "wallet" ]; then echo "get_key <account_name> <key[owner|active|...]> <type[public|private]>"; return; fi
-#     
-#     account=$1
-#     key=$2
-#     key_type=$3
-# 
-#     if [ "$2" == "wallet" ]; then cat $EOS_WALLET_INFO/$account/wallet_key; return; fi
-#     
-#     file=$EOS_WALLET_INFO/$account/key_$key
-#     cat $file | grep -i $key_type | grep -oE '[^ ]+$'
-# }
+function get_key
+{
+    if [ "$3" == "" ] && [ "$2" != "wallet" ]; then echo "get_key <account_name> <key[owner|active|...]> <type[public|private]>"; return; fi
+    
+    account=$1
+    key=$2
+    key_type=$3
+
+    if [ "$2" == "wallet" ]; then cat $EOS_WALLET_INFO/$account/wallet/private; return; fi
+    
+    cat $EOS_WALLET_INFO/$account/$key/$key_type
+}
 
 # function create_default_keys
 # {
@@ -125,16 +152,16 @@ function server_reset
 #     echo "$result" > $wallet_dir/wallet_key
 # }
 # 
-# function wallet_unlock
-# {
-#     if [ "$1" == "" ]; then echo "wallet_unlock <account_name>"; return; fi
-# 
-#     account_name=$1
-#     
-#     cleos wallet open -n $account_name
-#     wallet_password=`get_key $account_name wallet`
-#     cleos wallet unlock -n $account_name --password=$wallet_password
-# }
+function wallet_unlock
+{
+    if [ "$1" == "" ]; then echo "wallet_unlock <account_name>"; return; fi
+
+    account_name=$1
+    
+    $EOS_CLEOS wallet open --name $account_name
+    wallet_password=`get_key $account_name wallet`
+    $EOS_CLEOS wallet unlock --name $account_name --password=$wallet_password
+}
 # 
 # function account_create
 # {
@@ -209,29 +236,38 @@ function server_reset
 # }
 # 
 # 
-# function contract_install
-# {
-#    if [ "$1" == "" ]; then contract_name=${PWD##*/}; else contract_name=$1; fi
-# 
-# #    pushd $USER_CONTRACTS/$contract_name
-# 
-# #    echo "Building the contract..."
-# #    eosiocpp -o $contract_name.wast $contract_name.cpp
-# #    if [ $? != 0 ]; then echo "Failed to build contract"; popd; return 1; fi
-# 
-# #    echo "Unlocking wallets for 'default' and '$contract_name'"
-# #    wallet_unlock default
-# #    account_create eosio $contract_name
-# #    wallet_unlock $contract_name
-#  
-#     echo "Installing the contract..."
-#     #cleos set contract $contract_name $contract_name.wast $contract_name.abi
-#     cleos set contract $contract_name $USER_CONTRACTS/$contract_name
-#     
-#     if [ $? != 0 ]; then echo "Failed to publish contract"; return 2; fi
-#     
-# #     popd
-# }
+function contract_reset 
+{
+   if [ "$1" == "" ]; then contract_name=${PWD##*/}; else contract_name=$1; fi
+
+    echo "Reseting contract to noop..."
+    $EOS_CLEOS set contract $contract_name $EOS_CONTRACTS/noop
+
+#    if [ $? != 0 ]; then echo "Failed to reset contract"; return 2; fi
+}
+
+function contract_install
+{
+    if [ "$1" == "" ]; then contract_name=${PWD##*/}; else contract_name=$1; fi
+
+    contract_reset $contract_name
+
+    echo "Installing the contract..."
+    $EOS_CLEOS set contract $contract_name $USER_CONTRACTS/$contract_name
+    
+    if [ $? != 0 ]; then echo "Failed to publish contract"; return 2; fi
+}
+
+function contract_update_abi
+{
+    if [ "$1" == "" ]; then contract_name=${PWD##*/}; else contract_name=$1; fi
+
+    echo "Updating contract ABI..."
+    $EOS_CLEOS set abi $contract_name $USER_CONTRACTS/$contract_name/$contract_name.abi
+    
+    if [ $? != 0 ]; then echo "Failed to publish contract ABI"; return 2; fi
+}
+
 # 
 # function moeda_transfer
 # {

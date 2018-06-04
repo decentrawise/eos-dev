@@ -2,56 +2,18 @@
   "types": [{
       "new_type_name": "account_name",
       "type": "name"
-    },{
-      "new_type_name": "time_point_sec",
-      "type": "time"
     }
   ],
   "structs": [{
-      "name": "permission_level",
-      "base": "",
-      "fields": [
-        {"name": "actor", "type": "account_name"},
-        {"name": "permission", "type": "permission_name"}
-      ]
-    },{
-      "name": "action",
-      "base": "",
-      "fields": [
-         {"name": "account", "type": "account_name"},
-         {"name": "name", "type": "action_name"},
-         {"name": "authorization", "type": "permission_level[]"},
-         {"name": "data", "type": "bytes"}
-      ]
-    },{
       "name": "collab_data",
       "base": "",
       "fields": [
-         {"name": "name", "type": "action_name"},
+         {"name": "name", "type": "account_name"},
          {"name": "percentage", "type": "uint32"},
          {"name": "filename", "type": "string"},
-         {"name": "accepted", "type": "uint32"},
+         {"name": "accepted", "type": "uint32"}
       ]
     },{
-      "name": "transaction_header",
-      "base": "",
-      "fields": [
-         {"name": "expiration", "type": "time_point_sec"},
-         {"name": "region", "type": "uint16"},
-         {"name": "ref_block_num", "type": "uint32"},
-         {"name": "ref_block_prefix", "type": "uint16"},
-         {"name": "max_net_usage_words", "type": "varuint32"},
-         {"name": "max_kcpu_usage", "type": "varuint32"},
-         {"name": "delay_sec", "type": "varuint32"}
-      ]
-   },{
-      "name": "transaction",
-      "base": "transaction_header",
-      "fields": [
-         {"name": "context_free_actions", "type": "action[]"},
-         {"name": "actions", "type": "action[]"}
-      ]
-   },{
       "name": "propose",
       "base": "",
       "fields": [
@@ -59,7 +21,7 @@
         {"name":"proposal_name", "type":"name"},
         {"name": "price"       , "type": "uint32"},
         {"name":"filename"     , "type":"string"},
-        {"name":"requested"    , "type":"collab_data[]"},
+        {"name":"requested"    , "type":"collab_data[]"}
       ]
     },{
      "name": "approve",
@@ -100,7 +62,7 @@
         {"name": "name", "type": "name"},
         {"name": "approvals", "type": "collab_data[]"},
         {"name": "price", "type": "uint32"},
-        {"name": "filename", "type": "string"},
+        {"name": "filename", "type": "string"}
       ]
     }
   ],

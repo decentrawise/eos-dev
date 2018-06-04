@@ -1,0 +1,14 @@
+"use strict";
+
+var path = require('path');
+
+
+process.env.RUNTIME_DIR = '{{RUNTIME_DIR}}';
+process.env.EOS_DIR = process.env.RUNTIME_DIR;
+process.env.EOS_DATA_HOME = path.join(process.env.EOS_DIR, 'eos-data');
+process.env.EOS_WALLET_INFO = path.join(process.env.EOS_DIR, 'wallet_info');
+process.env.EOS_CONTRACTS = path.join(process.env.EOS_DIR, 'contracts');
+process.env.USER_CONTRACTS = path.join(process.env.EOS_DIR, 'contracts');
+process.env.EOS_BIN = path.join(process.env.EOS_DIR, 'bin');
+
+
