@@ -32,12 +32,12 @@ inita_active_key=EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
 function server_reset
 {
     echo "Resetting the blockchain..."
-    killall nodeos
+    killall -q nodeos
     rm -rf $EOS_WALLET_INFO/*
     rm -rf $EOS_DATA_HOME/wallets/*
     server_start --resync-blockchain &
     sleep 2
-    killall nodeos
+    killall -q nodeos
     
     server_start &
 }
