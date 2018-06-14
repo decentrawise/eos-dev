@@ -8,6 +8,13 @@ const express = require('express');
 var cors = require('cors');
 const app = express();
 var bodyParser = require('body-parser');
+const md5 = require("md5");
+
+function sha1(data) {
+    return crypto.createHash("sha1").update(data, "binary").digest("hex");
+}
+
+
 
 var port = 8585
 
@@ -195,7 +202,7 @@ app.post('/addTrack', (req, res) => {
     const options = eosCallOptions(["emancontent"], [permissions("emancontent")]);
 
     eos.contract('emancontent', options).then(contract => {
-        contract.addtrack(data.owner, data.metadata).then(function() { 
+        contract.addtrack(data.owner, data.title, JSON.stringify(data.metadata)).then(function() {
             res.send(resultOk());
         }).catch(error => {
             res.send(resultError(error));
@@ -205,14 +212,106 @@ app.post('/addTrack', (req, res) => {
     });
 })
 
-app.post('/getTracks', (req, res) => {
+app.post('/getTrack', (req, res) => {
     var data = req.body;
 
-    eos.getTableRows(true, 'emancontent', data.owner, 'track').then(results => {
+    var params = {
+        json:true, 
+        code: 'emancontent',
+        scope: data.owner,
+        table: 'track',
+        table_key: 'id',
+//         limit: 1,
+        lower_bound: '0',
+//         upper_bound: '2'
+    }
+    
+    eos.getTableRows(params).then(results => {
+        results.rows.forEach(track => {
+            track.metadata = JSON.parse( track.metadata );
+        });
+        
         res.send(resultOk(results));
     }).catch(error => {
         res.send(resultError(error));
     });
 })
 
-app.listen(port, () => console.log('Example app listening on port: ' + port)) 
+
+app.post('/getTracks', (req, res) => {
+    var data = req.body;
+
+    eos.getTableRows(true, 'emancontent', data.owner, 'track').then(results => {
+        results.rows.forEach(track => {
+            track.metadata = JSON.parse( track.metadata );
+        });
+        
+        res.send(resultOk(results));
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+
+app.post('/getStatistics', (req, res) => {
+    var data = req.body;
+
+    eos.getTableRows(true, 'emancontent', data.owner, 'stat').then(results => {
+        res.send(resultOk(results));
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+
+app.post('/play', (req, res) => {
+    var data = req.body;
+    const options = eosCallOptions(["emancontent"], [permissions("emancontent")]);
+
+    eos.contract('emancontent', options).then(contract => {
+        contract.play(data).then(function() {
+            res.send(resultOk());
+        }).catch(error => {
+            res.send(resultError(error));
+        });
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+app.post('/startPlaying', (req, res) => {
+    var data = req.body;
+    const options = eosCallOptions(["emancontent"], [permissions("emancontent")]);
+
+    eos.contract('emancontent', options).then(contract => {
+        contract.startplaying(data).then(function() {
+            res.send(resultOk());
+        }).catch(error => {
+            res.send(resultError(error));
+        });
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+
+app.post('/removeTrack', (req, res) => {
+    var data = req.body;
+    const options = eosCallOptions(["emancontent"], [permissions("emancontent")]);
+
+    eos.contract('emancontent', options).then(contract => {
+        contract.removetrack(data).then(function() {
+            res.send(resultOk());
+        }).catch(error => {
+            res.send(resultError(error));
+        });
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+app.listen(port, () => console.log('Example app listening on port: ' + port));
+
+
+
+

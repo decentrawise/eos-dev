@@ -21,12 +21,12 @@ protocols: [HTTP]
                         "requested": [                          //  needs at least one parner
                             {
                                 "name": "colabuser2",           //  name of the collaboration partner account
-                                "percentage": 10                //  percentage of the royalties for this partner
-                                "filename": "filename_needed"   //  filename needed for this collaboration
+                                "percentage": 10,               //  percentage of the royalties for this partner
+                                "filename": "filename_needed",  //  filename needed for this collaboration
                                 "accepted": 0                   //  Should be ignored but must exist for now
                             }
                         ]
-                    }                
+                    }
         responses:
             200:
                 body:
@@ -50,9 +50,9 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "from": "colabuser2", 
-                        "proposer": "colabuser1", 
-                        "name": "contract1"
+                        "proposer": "colabuser1",     //  Creator of the proposal
+                        "proposal_name": "contract1", //  Name of the proposal
+                        "approver": "colabuser2"      //  User that needs to accept or reject the proposal
                     }
         responses:
             200:
@@ -79,9 +79,9 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "from": "colabuser2", 
-                        "proposer": "colabuser1", 
-                        "name": "contract1"
+                        "proposer": "colabuser1",       //  Creator of the proposal
+                        "proposal_name": "contract1",   //  Name of the proposal
+                        "unapprover": "colabuser2"      //  User that needs to accept or reject the proposal
                     }
         responses:
             200:
@@ -107,9 +107,10 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "from": "colabuser2", 
-                        "proposer": "colabuser1", 
-                        "name": "user1"
+                        "proposer": "colabuser1", //  Creator of the proposal
+                        "proposal_name": "user1", //  Name of the proposal
+                        "executor": "colabuser2", //  User that listens to the track
+                        "seconds": 10             //  Number of seconds to charge the executor
                     }
         responses:
             200:
@@ -135,10 +136,13 @@ protocols: [HTTP]
                 example: | 
                     {
                         "owner": "collabuser1",                     //  The owner of the track
+                        "title": "This is a song 2",
                         "metadata":                                 //  All relevant data for the track
                         {
                             "trackName": "This is track 3",         //  The name of the track
                             "artistName": "Look, I'm an artist..."  //  The artist that made this track
+                            "meta 21": "some metadata here",        //  Add the metadata necessary for this track
+                            "meta 2": "some more metadata"
                         }
                     }
         responses:
@@ -176,5 +180,54 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "owner": "colabuser2", //   The user that you want to get the tracks from
+                        "owner": "user1", //   The user that you want to get the tracks from
                     }
+
+/getStatistics:
+    description: "Get tracks for this user"
+    post:
+        description: "Get tracks for this user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        "owner": "user1", //   The user that you want to get the tracks from
+                    }
+                    
+/startPlaying:
+    description: "Call this method to indicate that a user started to listen to a track"
+    post:
+        description: "Call this method to indicate that a user started to listen to a track"
+        body:
+            application/json:
+                example: | 
+                    {
+                      "owner": "user1",           //  The owner of the track
+                      "title": "This is a song 2" //  The title of the track
+                    }
+
+/startPlaying:
+    description: "Call this method to indicate that a user listen to several seconds of a track"
+    post:
+        description: "Call this method to indicate that a user listen to several seconds of a track"
+        body:
+            application/json:
+                example: | 
+                    {
+                      "owner": "user1",             //  The owner of the track
+                      "title": "This is a song 2",  //  The title of the track
+                      "seconds": 10                 //  Amount o time listened
+                    }
+                    
+/removeTrack:
+    description: "Removes a track for a specific user"
+    post:
+        description: "Removes a track for a specific user"
+        body:
+            application/json:
+                example: | 
+                    {
+                      "owner": "user1",           //  The owner of the track
+                      "title": "This is a song 2" //  The title of the track
+                    }
+
