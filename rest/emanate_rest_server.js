@@ -8,12 +8,6 @@ const express = require('express');
 var cors = require('cors');
 const app = express();
 var bodyParser = require('body-parser');
-const md5 = require("md5");
-
-function sha1(data) {
-    return crypto.createHash("sha1").update(data, "binary").digest("hex");
-}
-
 
 
 var port = 8585

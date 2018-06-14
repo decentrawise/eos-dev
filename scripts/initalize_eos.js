@@ -213,7 +213,10 @@ cleos.createAccount('eosio.token');
 cleos.setSystemContract('eosio.token', 'eosio.token');
 
 cleos.createToken('1000000000.0000 EOS');
-cleos.createToken('1000000000.0000 EMA');
+cleos.createToken('1000000000.0000 BEAT');
+
+cleos.installContract('emancollab');
+cleos.installContract('emancontent');
 
 cleos.createAccount('collabuser1');
 cleos.createAccount('collabuser2');
@@ -225,18 +228,17 @@ cleos.createAccount('user3');
 
 sleep(1);
 
-cleos.issueTokens('user1', 100, 'EMA');
-cleos.issueTokens('user2', 200, 'EMA');
-cleos.issueTokens('user3', 300, 'EMA');
+cleos.issueTokens('user1', 100, 'BEAT');
+cleos.issueTokens('user2', 200, 'BEAT');
+cleos.issueTokens('user3', 300, 'BEAT');
+cleos.issueTokens('emancollab', 1000, 'BEAT');
+cleos.issueTokens('emancontent', 1000, 'BEAT');
 
 // sleep(1);
 
-console.log(cleos.getAccountBalance('user1', 'EMA'));
-console.log(cleos.getAccountBalance('user2', 'EMA'));
-console.log(cleos.getAccountBalance('user3', 'EMA'));
-
-cleos.installContract('emancollab');
-cleos.installContract('emancontent');
+console.log(cleos.getAccountBalance('user1', 'BEAT'));
+console.log(cleos.getAccountBalance('user2', 'BEAT'));
+console.log(cleos.getAccountBalance('user3', 'BEAT'));
 
 /*
 var data = {
