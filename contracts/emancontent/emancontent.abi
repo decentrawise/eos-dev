@@ -4,19 +4,37 @@
     ],
     "structs":[
         {
-            "name":"trackMetadata",
-            "base":"",
-            "fields":[
-                { "name":"trackName", "type":"string" },
-                { "name":"artistName", "type":"string" }
-            ]
-        },
-        {
             "name":"addtrack",
             "base":"",
             "fields":[
                 { "name":"owner", "type":"account_name" },
-                { "name":"metadata", "type":"trackMetadata" }
+                { "name":"title", "type":"string" },
+                { "name":"metadata", "type":"string" }
+            ]
+        },
+        {
+            "name":"startplaying",
+            "base":"",
+            "fields":[
+                { "name":"owner", "type":"account_name" },
+                { "name":"title", "type":"string" }
+            ]
+        },
+        {
+            "name":"removetrack",
+            "base":"",
+            "fields":[
+                { "name":"owner", "type":"account_name" },
+                { "name":"title", "type":"string" }
+            ]
+        },
+        {
+            "name":"play",
+            "base":"",
+            "fields":[
+                { "name":"owner", "type":"account_name" },
+                { "name":"title", "type":"string" },
+                { "name":"seconds", "type":"uint64" }
             ]
         },
         {
@@ -24,22 +42,38 @@
             "base":"",
             "fields":[
                 { "name":"id", "type":"uint64" },
+                { "name":"checksum", "type":"uint64" },
                 { "name":"title", "type":"string" },
-                { "name":"metadata", "type":"trackMetadata" }
+                { "name":"metadata", "type":"string" }
+            ]
+        },
+        {
+            "name":"stat",
+            "base":"",
+            "fields":[
+                { "name":"id", "type":"uint64" },
+                { "name":"totalSecondsPlayed", "type":"uint64" },
+                { "name":"totalTimesPlayed", "type":"uint64" }
             ]
         }        
     ],
     "actions":[
-        {
-            "name": "addtrack",
-            "type": "addtrack",
-            "ricardian_contract": ""
-        }
+        { "name": "addtrack", "type": "addtrack", "ricardian_contract": "" },
+        { "name": "removetrack", "type": "removetrack", "ricardian_contract": "" },
+        { "name": "startplaying", "type": "startplaying", "ricardian_contract": "" },
+        { "name": "play", "type": "play", "ricardian_contract": "" }
     ],
     "tables":[
         {
             "name": "track",
             "type": "track",
+            "index_type": "i64",
+            "key_names" : ["id", "checksum"],
+            "key_types" : ["uint64", "uint64"]
+        },
+        {
+            "name": "stat",
+            "type": "stat",
             "index_type": "i64",
             "key_names" : ["id"],
             "key_types" : ["uint64"]
