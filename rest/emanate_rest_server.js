@@ -79,13 +79,26 @@ function getEOSConfig() {
         keyProvider: [
             getKeyPair('emancollab').private,
             getKeyPair('emancontent').private,
-            getKeyPair('collabuser1').private,
-            getKeyPair('collabuser2').private,
-            getKeyPair('collabuser3').private,
-            getKeyPair('collabuser4').private,
-            getKeyPair('user1').private,
-            getKeyPair('user2').private,
-            getKeyPair('user3').private,
+            getKeyPair('user11').private,
+            getKeyPair('user12').private,
+            getKeyPair('user13').private,
+            getKeyPair('user14').private,
+            getKeyPair('user15').private,
+            getKeyPair('user21').private,
+            getKeyPair('user22').private,
+            getKeyPair('user23').private,
+            getKeyPair('user24').private,
+            getKeyPair('user25').private,
+            getKeyPair('testuser11').private,
+            getKeyPair('testuser12').private,
+            getKeyPair('testuser13').private,
+            getKeyPair('testuser14').private,
+            getKeyPair('testuser15').private,
+            getKeyPair('testuser21').private,
+            getKeyPair('testuser22').private,
+            getKeyPair('testuser23').private,
+            getKeyPair('testuser24').private,
+            getKeyPair('testuser25').private,
         ],
         expireInSeconds: 60,
         broadcast: true,
@@ -174,6 +187,17 @@ app.post('/execute', (req, res) => {
         }).catch(error => {
             res.send(resultError(error));
         });
+    }).catch(error => {
+        res.send(resultError(error));
+    });
+})
+
+app.post('/getContracts', (req, res) => {
+    var data = req.body;
+
+    console.log(data);
+    eos.getTableRows(true, 'emancollab', data.proposer, 'proposal').then(results => {
+        res.send(resultOk(results));
     }).catch(error => {
         res.send(resultError(error));
     });

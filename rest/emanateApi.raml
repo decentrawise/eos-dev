@@ -14,13 +14,13 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "proposer": "collabuser1",              //  name of the account proposing the collaboration
+                        "proposer": "user11",              //  name of the account proposing the collaboration
                         "proposal_name": "contract1",           //  name of the contract
                         "price": 10000,                         //  price per second
                         "filename": "some_final_file_name",     //  the result filename of the collaboration
                         "requested": [                          //  needs at least one parner
                             {
-                                "name": "colabuser2",           //  name of the collaboration partner account
+                                "name": "user12",           //  name of the collaboration partner account
                                 "percentage": 10,               //  percentage of the royalties for this partner
                                 "filename": "filename_needed",  //  filename needed for this collaboration
                                 "accepted": 0                   //  Should be ignored but must exist for now
@@ -50,9 +50,9 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "proposer": "colabuser1",     //  Creator of the proposal
+                        "proposer": "user11",     //  Creator of the proposal
                         "proposal_name": "contract1", //  Name of the proposal
-                        "approver": "colabuser2"      //  User that needs to accept or reject the proposal
+                        "approver": "user12"      //  User that needs to accept or reject the proposal
                     }
         responses:
             200:
@@ -79,9 +79,9 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "proposer": "colabuser1",       //  Creator of the proposal
+                        "proposer": "user11",       //  Creator of the proposal
                         "proposal_name": "contract1",   //  Name of the proposal
-                        "unapprover": "colabuser2"      //  User that needs to accept or reject the proposal
+                        "unapprover": "user12"      //  User that needs to accept or reject the proposal
                     }
         responses:
             200:
@@ -107,10 +107,10 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "proposer": "colabuser1", //  Creator of the proposal
-                        "proposal_name": "user1", //  Name of the proposal
-                        "executor": "colabuser2", //  User that listens to the track
-                        "seconds": 10             //  Number of seconds to charge the executor
+                        "proposer": "user11",         //  Creator of the proposal
+                        "proposal_name": "contract1", //  Name of the proposal
+                        "executor": "user21",         //  User that listens to the track
+                        "seconds": 10                 //  Number of seconds to charge the executor
                     }
         responses:
             200:
@@ -135,11 +135,11 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "owner": "collabuser1",                     //  The owner of the track
-                        "title": "This is a song 2",
+                        "owner": "user11",                     //  The owner of the track
+                        "title": "This is a song 1",
                         "metadata":                                 //  All relevant data for the track
                         {
-                            "trackName": "This is track 3",         //  The name of the track
+                            "trackName": "This is a song 1",         //  The name of the track
                             "artistName": "Look, I'm an artist..."  //  The artist that made this track
                             "meta 21": "some metadata here",        //  Add the metadata necessary for this track
                             "meta 2": "some more metadata"
@@ -160,6 +160,17 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
                             
+/getContracts:
+    description: "Get all contract details for a user"
+    post:
+        description: "Get all contract details for a user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        "proposer": "user11", 
+                    }
+
 /getContract:
     description: "Get contract details"
     post:
@@ -168,7 +179,7 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        "proposer": "colabuser2", 
+                        "proposer": "user11", 
                         "contract": "contract1", 
                     }
 
@@ -203,10 +214,10 @@ protocols: [HTTP]
                 example: | 
                     {
                       "owner": "user1",           //  The owner of the track
-                      "title": "This is a song 2" //  The title of the track
+                      "title": "This is a song 1" //  The title of the track
                     }
 
-/startPlaying:
+/play:
     description: "Call this method to indicate that a user listen to several seconds of a track"
     post:
         description: "Call this method to indicate that a user listen to several seconds of a track"
@@ -215,7 +226,7 @@ protocols: [HTTP]
                 example: | 
                     {
                       "owner": "user1",             //  The owner of the track
-                      "title": "This is a song 2",  //  The title of the track
+                      "title": "This is a song 1",  //  The title of the track
                       "seconds": 10                 //  Amount o time listened
                     }
                     
@@ -228,6 +239,6 @@ protocols: [HTTP]
                 example: | 
                     {
                       "owner": "user1",           //  The owner of the track
-                      "title": "This is a song 2" //  The title of the track
+                      "title": "This is a song 1" //  The title of the track
                     }
 
