@@ -61,7 +61,7 @@ void content::removetrack(account_name owner, const std::string &title)
     require_auth( owner );
 
     uint64_t checksum = calculateChecksum(title);
-    
+
     {
         trackTable tracks(_self, owner);
         auto secondary_index = tracks.get_index<track::secondaryName>();

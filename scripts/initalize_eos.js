@@ -177,14 +177,6 @@ class EOSClient {
     }
     
     createToken(amount) {
-//         var data = {
-//             "issuer": "eosio",
-//             "maximum_supply": amount + ".0000 " + token,
-//             "issuer_can_freeze": 0,
-//             "issuer_can_recall": 0,
-//             "issuer_can_whitelist": 0
-//         };
-//         this.pushAction('eosio.token', 'create', '["eosio", "1000000000.0000 "' + token + ', 0, 0, 0]', ['eosio.token']);
         var command = this.createCommand('push action', ['eosio.token', 'create', '\'["eosio", "' + amount + '", 0, 0, 0]\''].concat(['--permission eosio.token']));
         console.log(command);
         return this.executeCommand(command);
@@ -218,61 +210,24 @@ cleos.createToken('1000000000.0000 BEAT');
 cleos.installContract('emancollab');
 cleos.installContract('emancontent');
 
-cleos.createAccount('collabuser1');
-cleos.createAccount('collabuser2');
-cleos.createAccount('collabuser3');
-cleos.createAccount('collabuser4');
-cleos.createAccount('user1');
-cleos.createAccount('user2');
-cleos.createAccount('user3');
+cleos.issueTokens('emancollab', 10000, 'BEAT');
+cleos.issueTokens('emancontent', 10000, 'BEAT');
 
-sleep(1);
+for(var index = 1; index <= 2; index++) {
+  var userName = 'user' + index;
+  var testUserName = 'testuser' + index;
 
-cleos.issueTokens('user1', 100, 'BEAT');
-cleos.issueTokens('user2', 200, 'BEAT');
-cleos.issueTokens('user3', 300, 'BEAT');
-cleos.issueTokens('emancollab', 1000, 'BEAT');
-cleos.issueTokens('emancontent', 1000, 'BEAT');
+  for(var index2 = 1; index2 <= 5; index2++) {
+    var finalUserName = userName + index2;
+    var finalTestUserName = testUserName + index2;
+    
+    cleos.createAccount(finalUserName);
+    cleos.issueTokens(finalUserName, 1000, 'BEAT');
+    
+    cleos.createAccount(finalTestUserName);
+    cleos.issueTokens(finalTestUserName, 1000, 'BEAT');
+  }
+}
 
-// sleep(1);
 
-console.log(cleos.getAccountBalance('user1', 'BEAT'));
-console.log(cleos.getAccountBalance('user2', 'BEAT'));
-console.log(cleos.getAccountBalance('user3', 'BEAT'));
 
-/*
-var data = {
-    "proposer": "collabuser1", 
-    "proposal_name": "contract1", 
-    "price": 10000, 
-    "requested": [{ 
-        "name": "collabuser2", 
-        "percentage": "30" 
-    }]
-};
-
-cleos.pushAction('emancollab', 'propose', data, ['collabuser1']);
-
-data = {
-    "proposer": "collabuser1", 
-    "proposal_name": "contract1", 
-    "approver": "collabuser2"
-};
-
-cleos.pushAction('emancollab', 'approve', data, ['collabuser1', 'collabuser2']);
-
-data = {
-    "proposer": "collabuser1", 
-    "proposal_name": "contract1", 
-    "executer": "user1"
-};
-
-cleos.pushAction('emancollab', 'exec', data, ['user1']);
-
-sleep(2);
-
-console.log(cleos.getAccountBalance('user1', 'EMA'));
-console.log(cleos.getAccountBalance('collabuser1', 'EMA'));
-console.log(cleos.getAccountBalance('collabuser2', 'EMA'));
-
-*/

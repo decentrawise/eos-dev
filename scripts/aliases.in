@@ -54,20 +54,20 @@ function server_reset
 
 function server_reset_service
 {
-    service emanate-api stop
-    service eos stop
+    systemctl --user stop emanate-api
+    systemctl --user stop eos
 
     server_reset
 
-    service eos start
-    service emanate-api start
+    systemctl --user start eos
 
     sleep 1
 
     pushd $RUNTIME_DIR/../scripts
-    node initialize_eos.js
+    node initalize_eos.js
     popd
 
+    systemctl --user start emanate-api
 }
 
 # function server_initialize
