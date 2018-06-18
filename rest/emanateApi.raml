@@ -127,6 +127,33 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
+/cancel:
+    description: "Cancel the contract"
+    post:
+        description: "Cancel the contract"
+        body:
+            application/json:
+                example: | 
+                    {
+                        "proposer": "user11",         //  Creator of the proposal
+                        "proposal_name": "contract1", //  Name of the proposal
+                        "canceler": "user11",         //  User that listens to the track
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
 /addTrack:
     description: "Add a new track for a user"
     post:

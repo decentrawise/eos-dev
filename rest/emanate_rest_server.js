@@ -173,8 +173,17 @@ app.post('/reject', (req, res) => {
 
 app.post('/cancel', (req, res) => {
     var data = req.body;
-    
-    res.send("Canceling the proposal");
+    const options = eosCallOptions(["emancollab"], [permissions("emancollab")]);
+
+    eos.contract('emancollab', options).then(contract => {
+        contract.cancel(data, { authorization: data.canceler }).then(function() {
+            res.send(resultOk());
+        }).catch(error => {
+            res.send(resultError(error));
+        });
+    }).catch(error => {
+        res.send(resultError(error));
+    });
 })
 
 app.post('/execute', (req, res) => {
