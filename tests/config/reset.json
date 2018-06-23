@@ -1,0 +1,13 @@
+{
+  "spec_dir": "spec",
+  "spec_files": [
+    "initial-spec.js",
+    "content-spec.js",
+    "auth-spec.js"
+  ],
+  "helpers": [
+    "helpers/**/*.js"
+  ],
+  "stopSpecOnExpectationFailure": false,
+  "random": false
+}

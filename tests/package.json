@@ -1,0 +1,16 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "Emanate REST API tests",
+  "main": "main.js",
+  "dependencies": {
+    "jasmine": "^3.1.0",
+    "node-rest-client": "^3.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "jasmine"
+  },
+  "author": "Miguel Tadeu",
+  "license": "ISC"
+}

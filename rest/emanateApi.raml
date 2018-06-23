@@ -1,1 +1,330 @@
-../../eosruntime/rest/emanateApi.raml
+#%RAML 1.0
+title: Emanate Colaboration Contract
+baseUri: https://emanate.dev.decentrawise.com/
+version: v1
+description: |
+  Available users are user11, user12, user13, user14, user15, user21, user22, user23, user23, user25.
+protocols: [HTTP]
+
+/authenticate:
+    description: "Create a new auth token"
+    post:
+        description: "Create a new auth token"
+        body:
+            application/json:
+                example: | 
+                    {
+                        user: <user>,
+                        password: <password>
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { token: <token> }
+                            }
+
+/propose:
+    description: "Propose a collaboration contract to one or several users"
+    post:
+        description: "Propose a collaboration contract to one or several users"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                             // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11",                   //  name of the account proposing the collaboration
+                            "proposal_name": "contract1",           //  name of the contract
+                            "price": 10000,                         //  price per second
+                            "filename": "some_final_file_name",     //  the result filename of the collaboration
+                            "requested": [                          //  needs at least one parner
+                                {
+                                    "name": "user12",               //  name of the collaboration partner account
+                                    "percentage": 10,               //  percentage of the royalties for this partner
+                                    "filename": "filename_needed",  //  filename needed for this collaboration
+                                    "accepted": 0                   //  Should be ignored but must exist for now
+                                }
+                            ]
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+              
+/accept:
+    description: "Accept a contract proposal"
+    post:
+        description: "Accept a contract proposal"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                     // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11",           //  Creator of the proposal
+                            "proposal_name": "contract1",   //  Name of the proposal
+                            "approver": "user12"            //  User that needs to accept or reject the proposal
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+                            
+                            
+/reject:
+    description: "Reject a contract proposal"
+    post:
+        description: "Reject a contract proposal"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                     // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11",           //  Creator of the proposal
+                            "proposal_name": "contract1",   //  Name of the proposal
+                            "unapprover": "user12"          //  User that needs to accept or reject the proposal
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+                    
+/execute:
+    description: "Execute the contract"
+    post:
+        description: "Execute the contract"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                   // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11",         //  Creator of the proposal
+                            "proposal_name": "contract1", //  Name of the proposal
+                            "executor": "user21",         //  User that listens to the track
+                            "seconds": 10                 //  Number of seconds to charge the executor
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/cancel:
+    description: "Cancel the contract"
+    post:
+        description: "Cancel the contract"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                   // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11",         //  Creator of the proposal
+                            "proposal_name": "contract1", //  Name of the proposal
+                            "canceler": "user11",         //  User that listens to the track
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/addTrack:
+    description: "Add a new track for a user"
+    post:
+        description: "Add a new track for a user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                                 // Token retrieved from authenticate method
+                        parameters: {
+                            "owner": "user11",                          //  The owner of the track
+                            "title": "This is a song 1",
+                            "metadata":                                 //  All relevant data for the track
+                            {
+                                "trackName": "This is a song 1",        //  The name of the track
+                                "artistName": "Look, I'm an artist..."  //  The artist that made this track
+                                "meta 21": "some metadata here",        //  Add the metadata necessary for this track
+                                "meta 2": "some more metadata"
+                            }
+                        }
+                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { ... }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+                            
+/getContracts:
+    description: "Get all contract details for a user"
+    post:
+        description: "Get all contract details for a user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                 // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11", 
+                        }
+                    }
+
+/getContract:
+    description: "Get contract details"
+    post:
+        description: "Get contract details"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                 // Token retrieved from authenticate method
+                        parameters: {
+                            "proposer": "user11", 
+                            "contract": "contract1", 
+                        }
+                    }
+
+/getTracks:
+    description: "Get tracks for this user"
+    post:
+        description: "Get tracks for this user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,       // Token retrieved from authenticate method
+                        parameters: {
+                            "owner": "user1", //   The user that you want to get the tracks from
+                        }
+                    }
+
+/getStatistics:
+    description: "Get tracks for this user"
+    post:
+        description: "Get tracks for this user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,
+                        parameters: {
+                            "owner": "user1", //   The user that you want to get the tracks from
+                        }
+                    }
+                    
+/startPlaying:
+    description: "Call this method to indicate that a user started to listen to a track"
+    post:
+        description: "Call this method to indicate that a user started to listen to a track"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                 // Token retrieved from authenticate method
+                        parameters: {
+                            "owner": "user1",           //  The owner of the track
+                            "title": "This is a song 1" //  The title of the track
+                        }
+                    }
+
+/play:
+    description: "Call this method to indicate that a user listen to several seconds of a track"
+    post:
+        description: "Call this method to indicate that a user listen to several seconds of a track"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                   // Token retrieved from authenticate method
+                        parameters: {
+                            "owner": "user1",             //  The owner of the track
+                            "title": "This is a song 1",  //  The title of the track
+                            "seconds": 10                 //  Amount o time listened
+                        }
+                    }
+                    
+/removeTrack:
+    description: "Removes a track for a specific user"
+    post:
+        description: "Removes a track for a specific user"
+        body:
+            application/json:
+                example: | 
+                    {
+                        token: <token>,                 // Token retrieved from authenticate method
+                        parameters: {
+                            "owner": "user1",           //  The owner of the track
+                            "title": "This is a song 1" //  The title of the track
+                        }
+                    }
