@@ -1,11 +1,13 @@
 "use strict";
 
+process.chdir(process.env.PWD);
+
+var path = require('path');
 require('./environment.js');
 var Eos = require('eosjs')
 let {ecc} = Eos.modules
 var execSync = require('child_process').execSync;
 var fs = require("fs");
-var path = require('path');
 var binaryen = require('binaryen')
 
 
@@ -94,8 +96,8 @@ class EOSClient {
             }
             
             
-            result.private = fs.readFileSync(privateKeyFile).toString();
-            result.public = fs.readFileSync(publicKeyFile).toString();
+            result.private = fs.readFileSync(privateKeyFile).toString().trim();
+            result.public = fs.readFileSync(publicKeyFile).toString().trim();
         }
         return result;
     }
@@ -190,6 +192,42 @@ class EOSClient {
         };
         this.pushAction('eosio.token', 'issue', data, ['eosio']);
     }
+    
+    transferTokens(from, to, amount, token) {
+        var data = {
+            "from": from,
+            "to": to,
+            "quantity": [amount + '.0000', token].join(' '),
+            "memo": "First payout"
+        };
+        this.pushAction('eosio.token', 'transfer', data, [from]);
+    }
+    
+    setAccountPermission(accountName, permissionName, permission) {
+        var data = {
+            threshold: 1,
+            keys: [
+                {
+                  key: this.getKeyPair(accountName, permissionName).public,
+                  weight: 1
+                }
+            ],
+            accounts: [
+                {
+                    permission:
+                        {
+                          actor: permission.split('@')[0],
+                          permission: permission.split('@')[1]
+                        },
+                        weight:1
+                }
+            ]
+        }
+        
+        var command = this.createCommand('set account permission', [accountName, permissionName, "'" + JSON.stringify(data) + "'", 'owner', '--permission ' + accountName]);
+        return this.executeCommand(command);
+    };
+        
 }
 
 var cleos = new EOSClient();
@@ -210,7 +248,7 @@ cleos.createToken('1000000000.0000 BEAT');
 cleos.installContract('emancollab');
 cleos.installContract('emancontent');
 
-cleos.issueTokens('emancollab', 10000, 'BEAT');
+cleos.issueTokens('emancollab', 100000, 'BEAT');
 cleos.issueTokens('emancontent', 10000, 'BEAT');
 
 for(var index = 1; index <= 2; index++) {
@@ -223,9 +261,11 @@ for(var index = 1; index <= 2; index++) {
     
     cleos.createAccount(finalUserName);
     cleos.issueTokens(finalUserName, 1000, 'BEAT');
+    cleos.setAccountPermission(finalUserName, 'active', 'emancollab@eosio.code')
     
     cleos.createAccount(finalTestUserName);
     cleos.issueTokens(finalTestUserName, 1000, 'BEAT');
+    cleos.setAccountPermission(finalTestUserName, 'active', 'emancollab@eosio.code')
   }
 }
 

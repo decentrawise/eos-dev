@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory={{PATH_TO_EMANATE_REST_API}}
-ExecStart=/usr/bin/node {{PATH_TO_EMANATE_REST_API}}/emanate_rest_server.js
+ExecStart=/usr/bin/node {{PATH_TO_EMANATE_REST_API}}/index.js
 Restart=always
 
 [Install]

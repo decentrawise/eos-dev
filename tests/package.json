@@ -4,10 +4,11 @@
   "description": "Emanate REST API tests",
   "main": "main.js",
   "dependencies": {
-    "jasmine": "^3.1.0",
     "node-rest-client": "^3.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jasmine": "^3.1.0"
+  },
   "scripts": {
     "test": "jasmine"
   },

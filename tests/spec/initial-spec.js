@@ -27,9 +27,24 @@ describe('T0 tests', () => {
                 return emanate.getTracks(user, body.data.token)
             })
             .then(body => {
+                //console.log(JSON.stringify(body));
                 expect(body.success).toBe(true);
                 expect(body.data.rows).toBeDefined();
                 expect(body.data.rows.length).toBe(0);
+                done();
+            });
+        });
+    });
+
+    it('get user', (done) => {
+        testUsers.forEach((user) => {
+            emanate.login(user, user)
+            .then(body => {
+                return emanate.getUser(user, body.data.token);
+            })
+            .then(body => {
+                expect(body.success).toBe(true);
+                expect(body.data.username).toBe(user);
                 done();
             });
         });
@@ -49,6 +64,7 @@ describe('T0 tests', () => {
             });
         });
     });
+
 
     it('get statistics', (done) => {
         testUsers.forEach((user) => {

@@ -36,16 +36,15 @@ void collab::approve( account_name proposer, eosio::name proposal_name, account_
     auto prop_it = proptable.find( proposal_name );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
-    auto iter = std::find( prop_it->approvals.begin(), prop_it->approvals.end(), approver );
-    eosio_assert( iter != prop_it->approvals.end(), "approval is not on the list of requested approvals" );
-
-    require_auth( iter->name );
-
-    proptable.modify( prop_it, proposer, [&]( auto& mprop ) 
+    proptable.modify( prop_it, proposer, [&]( auto& mprop )
     {
-        mprop.approvals.push_back( *iter );
-        mprop.approvals.erase( iter );
+        auto iter = std::find( mprop.approvals.begin(), mprop.approvals.end(), approver );
+        eosio_assert( iter != mprop.approvals.end(), "approval is not on the list of requested approvals" );
+
+        require_auth( iter->name );
+        iter->accepted = true;
     });
+
 }
 
 void collab::unapprove( account_name proposer, eosio::name proposal_name, account_name unapprover ) 
@@ -53,15 +52,14 @@ void collab::unapprove( account_name proposer, eosio::name proposal_name, accoun
     proposals proptable( _self, proposer );
     auto prop_it = proptable.find( proposal_name );
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
-    auto iter = std::find( prop_it->approvals.begin(), prop_it->approvals.end(), unapprover );
-    eosio_assert( iter != prop_it->approvals.end(), "no approval previously granted" );
-
-    require_auth( iter->name );
 
     proptable.modify( prop_it, proposer, [&]( auto& mprop ) 
     {
-        mprop.approvals.push_back( *iter );
-        mprop.approvals.erase( iter );
+        auto iter = std::find( mprop.approvals.begin(), mprop.approvals.end(), unapprover );
+        eosio_assert( iter != mprop.approvals.end(), "no approval previously granted" );
+
+        require_auth( iter->name );
+        iter->accepted = false;
     });
 }
 
@@ -76,7 +74,7 @@ void collab::cancel( account_name proposer, eosio::name proposal_name, account_n
     proptable.erase(prop_it);
 }
 
-void collab::exec( account_name proposer, eosio::name proposal_name, account_name executer, uint32_t seconds ) 
+void collab::exec( account_name proposer, eosio::name proposal_name, account_name executer, uint32_t seconds )
 {
     require_auth( executer );
 
@@ -85,18 +83,21 @@ void collab::exec( account_name proposer, eosio::name proposal_name, account_nam
     eosio_assert( prop_it != proptable.end(), "proposal not found" );
 
     auto trx = eosio::transaction();
-    
+
     uint32_t percentage = 100;
     uint64_t totalPayment = prop_it->price * seconds;
-    for( const collab_data &data : prop_it->approvals ) 
+    for( const collab_data &data : prop_it->approvals )
     {
         percentage -= data.percentage;
-        eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, data.name, eosio::asset(totalPayment * data.percentage / 100, S(4, EMA)), "" } );
+        eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, data.name, eosio::asset(totalPayment * data.percentage / 100, S(4, BEAT)), "" } );
         trx.actions.emplace_back(std::move(action));
     }
-    
-    eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, proposer, eosio::asset(totalPayment * percentage / 100, S(4, EMA)), "" } );
-    trx.actions.emplace_back(std::move(action));
+
+    if( percentage > 0 )
+    {
+        eosio::action action( eosio::permission_level( executer, N(active) ), N(eosio.token), N(transfer), transfer{ executer, proposer, eosio::asset(totalPayment * percentage / 100, S(4, BEAT)), "" } );
+        trx.actions.emplace_back(std::move(action));
+    }
 
     trx.send(0, executer);
 }

@@ -19,7 +19,7 @@ describe('Content tests', () => {
             }
         }
     });
-    
+
     it('Create/remove content', (done) => {
         var metadata = {
             "filename": "Title 1",
@@ -28,27 +28,37 @@ describe('Content tests', () => {
             "year": 2018
         };
         
-        testUsers.forEach((user) => {
-            emanate.addContent(user, 'Title 1', metadata)
+        var user = 'testuser11';
+
+        emanate.resetCounters()
+        .then(body => {
+            return emanate.login(user, user);
+        })
+        .then(body => {
+            var authToken = body.data.token;
+
+            emanate.addContent(user, 'Title 1', metadata, authToken)
             .then(body => {
+                //console.log(JSON.stringify(body))
                 expect(body.success).toBe(true);
                 expect(body.data).toBeDefined();
                 
-                return emanate.getTracks(user);
+                return emanate.getTracks(user, authToken);
             })
             .then(body => {
+                //console.log('--> ' + JSON.stringify(body));
                 expect(body.success).toBe(true);
                 expect(body.data).toBeDefined();
                 expect(body.data.rows).toBeDefined();
                 expect(body.data.rows.length).toBe(1);
                 
-                return emanate.removeContent(user, 'Title 1');
+                return emanate.removeContent(user, 'Title 1', authToken);
             })
             .then(body => {
                 expect(body.success).toBe(true);
                 expect(body.data).toBeDefined();
                 
-                return emanate.getTracks(user);
+                return emanate.getTracks(user, authToken);
             })
             .then(body => {
                 expect(body.success).toBe(true);
@@ -61,6 +71,6 @@ describe('Content tests', () => {
                 console.log(user + " - exception: " + error);
                 done();
             });
-        });
+        })
     });
 });

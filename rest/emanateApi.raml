@@ -27,7 +27,7 @@ protocols: [HTTP]
                                 "data": { token: <token> }
                             }
 
-/propose:
+/user/:username/collab:
     description: "Propose a collaboration contract to one or several users"
     post:
         description: "Propose a collaboration contract to one or several users"
@@ -35,9 +35,7 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        token: <token>,                             // Token retrieved from authenticate method
                         parameters: {
-                            "proposer": "user11",                   //  name of the account proposing the collaboration
                             "proposal_name": "contract1",           //  name of the contract
                             "price": 10000,                         //  price per second
                             "filename": "some_final_file_name",     //  the result filename of the collaboration
@@ -66,19 +64,17 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
               
-/accept:
+/user/:username/collab/accept:
     description: "Accept a contract proposal"
-    post:
+    put:
         description: "Accept a contract proposal"
         body:
             application/json:
                 example: | 
                     {
-                        token: <token>,                     // Token retrieved from authenticate method
                         parameters: {
                             "proposer": "user11",           //  Creator of the proposal
                             "proposal_name": "contract1",   //  Name of the proposal
-                            "approver": "user12"            //  User that needs to accept or reject the proposal
                         }
                     }
         responses:
@@ -98,19 +94,17 @@ protocols: [HTTP]
 
                             
                             
-/reject:
+/user/:username/collab/reject:
     description: "Reject a contract proposal"
-    post:
+    put:
         description: "Reject a contract proposal"
         body:
             application/json:
                 example: | 
                     {
-                        token: <token>,                     // Token retrieved from authenticate method
                         parameters: {
                             "proposer": "user11",           //  Creator of the proposal
                             "proposal_name": "contract1",   //  Name of the proposal
-                            "unapprover": "user12"          //  User that needs to accept or reject the proposal
                         }
                     }
         responses:
@@ -129,19 +123,17 @@ protocols: [HTTP]
                             }
 
                     
-/execute:
+/user/:username/collab/pay:
     description: "Execute the contract"
-    post:
+    put:
         description: "Execute the contract"
         body:
             application/json:
                 example: | 
                     {
-                        token: <token>,                   // Token retrieved from authenticate method
                         parameters: {
                             "proposer": "user11",         //  Creator of the proposal
                             "proposal_name": "contract1", //  Name of the proposal
-                            "executor": "user21",         //  User that listens to the track
                             "seconds": 10                 //  Number of seconds to charge the executor
                         }
                     }
@@ -160,19 +152,17 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
-/cancel:
+/user/:username/collab:
     description: "Cancel the contract"
-    post:
+    delete:
         description: "Cancel the contract"
         body:
             application/json:
                 example: | 
                     {
-                        token: <token>,                   // Token retrieved from authenticate method
                         parameters: {
                             "proposer": "user11",         //  Creator of the proposal
                             "proposal_name": "contract1", //  Name of the proposal
-                            "canceler": "user11",         //  User that listens to the track
                         }
                     }
         responses:
@@ -190,7 +180,14 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
-/addTrack:
+/user/:username/collab:
+    description: "Get all contract details for a user"
+    get:
+        description: "Get all contract details for a user"
+
+
+
+/user/:username/asset:
     description: "Add a new track for a user"
     post:
         description: "Add a new track for a user"
@@ -198,9 +195,7 @@ protocols: [HTTP]
             application/json:
                 example: | 
                     {
-                        token: <token>,                                 // Token retrieved from authenticate method
                         parameters: {
-                            "owner": "user11",                          //  The owner of the track
                             "title": "This is a song 1",
                             "metadata":                                 //  All relevant data for the track
                             {
@@ -226,105 +221,35 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
                             
-/getContracts:
-    description: "Get all contract details for a user"
-    post:
-        description: "Get all contract details for a user"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,                 // Token retrieved from authenticate method
-                        parameters: {
-                            "proposer": "user11", 
-                        }
-                    }
 
-/getContract:
-    description: "Get contract details"
-    post:
-        description: "Get contract details"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,                 // Token retrieved from authenticate method
-                        parameters: {
-                            "proposer": "user11", 
-                            "contract": "contract1", 
-                        }
-                    }
 
-/getTracks:
+/user/:username/asset:
     description: "Get tracks for this user"
-    post:
+    get:
         description: "Get tracks for this user"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,       // Token retrieved from authenticate method
-                        parameters: {
-                            "owner": "user1", //   The user that you want to get the tracks from
-                        }
-                    }
 
-/getStatistics:
+
+/user/:username/asset/statistics:
     description: "Get tracks for this user"
-    post:
+    get:
         description: "Get tracks for this user"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,
-                        parameters: {
-                            "owner": "user1", //   The user that you want to get the tracks from
-                        }
-                    }
-                    
-/startPlaying:
+
+
+/user/:username/asset/play/:title:
     description: "Call this method to indicate that a user started to listen to a track"
-    post:
+    put:
         description: "Call this method to indicate that a user started to listen to a track"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,                 // Token retrieved from authenticate method
-                        parameters: {
-                            "owner": "user1",           //  The owner of the track
-                            "title": "This is a song 1" //  The title of the track
-                        }
-                    }
 
-/play:
-    description: "Call this method to indicate that a user listen to several seconds of a track"
-    post:
-        description: "Call this method to indicate that a user listen to several seconds of a track"
-        body:
-            application/json:
-                example: | 
-                    {
-                        token: <token>,                   // Token retrieved from authenticate method
-                        parameters: {
-                            "owner": "user1",             //  The owner of the track
-                            "title": "This is a song 1",  //  The title of the track
-                            "seconds": 10                 //  Amount o time listened
-                        }
-                    }
-                    
-/removeTrack:
+
+/user/:username/asset:
     description: "Removes a track for a specific user"
-    post:
+    delete:
         description: "Removes a track for a specific user"
         body:
             application/json:
                 example: | 
                     {
-                        token: <token>,                 // Token retrieved from authenticate method
                         parameters: {
-                            "owner": "user1",           //  The owner of the track
                             "title": "This is a song 1" //  The title of the track
                         }
                     }

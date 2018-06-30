@@ -10,118 +10,123 @@ module.exports = class EmanateApi {
         this.client = new Client();
     }
     
-    args(data) {
-      result = {
-        headers: { "Content-Type": "application/json" },
-        data: data
-      }
-      return result;
+    args(data, token) {
+        result = {
+            headers: { "Content-Type": "application/json" },
+        }
+
+        if(data != null) {
+            result.data = data;
+        }
+
+        if(token != null) {
+            result.headers['auth-token'] = token;
+        }
+        
+        return result;
     }
     
     url(methodName) {
-      return this.host + ':' + this.port + '/' + methodName;
+        return this.host + ':' + this.port + '/v1/' + methodName;
     }
     
-    sleep(miliseconds) {
-        var now = new Date().getTime();
-        while(new Date().getTime() < now + miliseconds){ /* do nothing */ } 
-    }
-    
-    post(methodName, data) {
+    post(methodName, data, token) {
         return new Promise((resolve, reject) => {
-            this.client.post(this.url(methodName), this.args(data), resolve);
+            var url = this.url(methodName)
+            var args = this.args(data, token);
+            //console.log('POS: ' + url);
+            // console.log('    ' + JSON.stringify(args));
+            this.client.post(url, args, resolve);
         });
     }
     
-//     postSync(methodName, data) {
-//         return new Promise(resolve => {
-//             this.client.post(this.url(methodName), this.args(data), (data, response) => { 
-//               console.log("postSync: " + JSON.stringify(data));
-//               resolve(data);
-//             });
-//         });
-//     }
+    get(methodName, token) {
+        return new Promise((resolve, reject) => {
+            var url = this.url(methodName)
+            var args = this.args(null, token);
+            // console.log('GET: ' + url);
+            // console.log('    ' + JSON.stringify(args));
+            this.client.get(url, args, resolve);
+        });
+    }
     
+    put(methodName, data, token) {
+        return new Promise((resolve, reject) => {
+            var url = this.url(methodName)
+            var args = this.args(data, token);
+            // console.log('PUT: ' + url);
+            // console.log('    ' + JSON.stringify(args));
+            this.client.put(url, args, resolve);
+        });
+    }
+    
+    delete(methodName, data, token) {
+        return new Promise((resolve, reject) => {
+            var url = this.url(methodName)
+            var args = this.args(data, token);
+            // console.log('DEL: ' + url);
+            // console.log('    ' + JSON.stringify(args));
+            this.client.delete(url, args, resolve);
+        });
+    }
+    
+
+
+
     login(user, pass) {
         return this.post('authenticate', {"user": user, "password": pass});
     }
     
-    resetCounters() {
-        return this.post('debugResetGetLimit');
+    getUser(userName, token = null) {
+        return this.get('user/' + userName, token);
     }
-    
-//     async loginSync(user, pass) {
-//         return await this.postSync('authenticate', {"user": user, "password": pass});
-//     }
 
     getTracks(userName, token = null) {
-      var params = { "owner": userName };
-      var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('getTracks', data);
+        return this.get('user/' + userName + '/asset', token);
     }
     
     getContracts(userName, token = null) {
-      var params = { "proposer": userName };
-      var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('getContracts', data);
+        return this.get('user/' + userName + '/collab', token);
     }
 
     getStatistics(userName, token = null) {
-      var params = { "owner": userName };
-      var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('getStatistics', data);
+        return this.get('user/' + userName + '/asset/statistics', token);
     }
     
     addContent(userName, title, metadata, token = null) {
-      var params = { "owner": userName, "title": title, "metadata": metadata }
+      var params = { "username": userName, "title": title, "metadata": metadata }
       var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('addTrack', data);
+      return this.post('user/' + userName + '/asset', data, token);
     }
 
     removeContent(userName, title, token = null) {
-      var params = { "owner": userName, "title": title };
+      var params = { "username": userName, "title": title };
       var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('removeTrack', data);
+      return this.delete('user/' + userName + '/asset', data, token);
     }
     
-    propose(params, token = null) {
+    collabPropose(userName, params, token = null) {
       var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('propose', data);
+      return this.post('user/' + userName + '/collab', data, token);
     }
 
-    cancel(proposer, proposalName, canceler, token = null) {
-      var params = { "proposer": proposer, "proposal_name": proposalName, "canceler": canceler };
-      var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('cancel', data);
+    collabCancel(userName, contractName, token = null) {
+      return this.delete('user/' + userName + '/collab/' + contractName, null, token);
     }
 
-    accept(proposer, proposalName, accepter, token = null) {
-      var params = { "proposer": proposer, "proposal_name": proposalName, "accepter": accepter };
+    collabAccept(userName, proposer, proposalName, token = null) {
+      var params = { "proposer": proposer, "proposal_name": proposalName };
       var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('accept', data);
+      return this.put('user/' + userName + '/collab/accept', data, token);
     }
 
-    reject(proposer, proposalName, unaccepter, token = null) {
-      var params = { "proposer": proposer, "proposal_name": proposalName, "unaccepter": unaccepter };
+    collabReject(userName, proposer, proposalName, token = null) {
+      var params = { "proposer": proposer, "proposal_name": proposalName };
       var data = { parameters: params };
-      if(token != null)
-          data.token = token;
-      return this.post('reject', data);
+      return this.put('user/' + userName + '/collab/reject', data, token);
+    }
+
+    resetCounters() {
+        return this.put('/debug/resetGetLimit');
     }
 }

@@ -2,8 +2,9 @@
   "spec_dir": "spec",
   "spec_files": [
     "initial-spec.js",
-    "content-spec.js",
-    "auth-spec.js"
+    "auth-spec.js",
+    "surface-content-spec.js",
+    "surface-contract-spec.js"
   ],
   "helpers": [
     "helpers/**/*.js"
