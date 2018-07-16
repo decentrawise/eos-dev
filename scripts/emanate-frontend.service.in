@@ -1,0 +1,13 @@
+[Unit]
+Description=Emanate Frontend daemon
+After=network.target
+
+[Service]
+Type=simple
+Environment=BROWSER=none
+WorkingDirectory={{PATH_TO_EMANATE_FRONTEND}}
+ExecStart=/usr/bin/npm start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
