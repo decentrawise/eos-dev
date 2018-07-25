@@ -1,3 +1,5 @@
+"use strict";
+
 var router = require('express').Router();
 var common = require('../../../common');
 
@@ -26,17 +28,34 @@ var keys = [
     common.wallet.getKeyPair('testuser25').private,
 ];
 
+function localTableParams(userName, lowerBound = "", maxRows = -1){
+    return common.eos.tableParams('emancollab', userName, 'proposal', 'name', lowerBound, maxRows);
+}
 
 router.get('/', common.limits.getData, (req, res) => {
+    console.log('collab get - step 1');
+    var params = localTableParams(req.username);
+    console.log('collab get - step 2');
+    console.log(JSON.stringify(params));
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
-
-    eos.getTableRows(true, 'emancollab', req.username, 'proposal').then(results => {
-        res.send(common.responses.ok(results));
-    }).catch(error => {
-        res.send(common.responses.error(error));
+    var result = eos.getAllTableRows(params, result => {
+        res.json(common.responses.ok(result));
     });
 })
+/*
+router.get('/:contract', common.limits.getData, (req, res) => {
+    var eos = common.eos.instance(common.eos.getEOSConfig(keys));
 
+    var result = eos.getFirstRecord(localTableParams(req.username, req.params.contract), result => {
+        console.log('-- get contract -->' + JSON.stringify(result));
+        if(result) {
+            res.json(common.responses.ok(result));
+        } else {
+            res.json(common.responses.error('Not found'));
+        }
+    });
+})
+*/
 router.post('/', common.limits.addData, (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     const options = common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab"), common.eos.permissions(req.username)]);
@@ -46,7 +65,9 @@ router.post('/', common.limits.addData, (req, res) => {
 
     eos.contract('emancollab', options).then(contract => {
         contract.propose(data.parameters).then(function() { 
-            res.send(common.responses.ok()); 
+            eos.getFirstRecord(localTableParams(req.username, data.parameters.proposal_name), result => {
+                res.send(common.responses.ok(result));
+            });
         }).catch(error => {
             res.send(common.responses.error(error));
         });
@@ -67,11 +88,14 @@ router.delete('/:contract', common.limits.changeData, (req, res) => {
     };
 
     eos.contract('emancollab', options).then(contract => {
-        contract.cancel(parameters, { authorization: req.username }).then(function() {
-            res.send(common.responses.ok());
-        }).catch(error => {
-            res.send(common.responses.error(error));
+        eos.getFirstRecord(localTableParams(req.username, data.parameters.proposal_name), result => {
+            contract.cancel(parameters, { authorization: req.username }).then(function() {
+                res.send(common.responses.ok(result));
+            }).catch(error => {
+                res.send(common.responses.error(error));
+            });
         });
+    
     }).catch(error => {
         res.send(common.responses.error(error));
     });
@@ -87,7 +111,9 @@ router.put('/accept', common.limits.changeData, (req, res) => {
     
     eos.contract('emancollab', options).then(contract => {
         contract.approve(data.parameters.proposer, data.parameters.proposal_name, data.parameters.approver, { authorization: req.username }).then(function() {
-            res.json(common.responses.ok());
+            eos.getFirstRecord(localTableParams(data.parameters.proposer, data.parameters.proposal_name), result => {
+                res.json(common.responses.ok(result));
+            });
         }).catch(error => {
             res.json(common.responses.error(error));
         });
@@ -107,7 +133,9 @@ router.put('/reject', common.limits.changeData, (req, res) => {
 
     eos.contract('emancollab', options).then(contract => {
         contract.unapprove(data.parameters.proposer, data.parameters.proposal_name, data.parameters.unapprover, { authorization: req.username }).then(function() { 
-            res.send(common.responses.ok());
+            eos.getFirstRecord(localTableParams(data.parameters.proposer, data.parameters.proposal_name), result => {
+                res.json(common.responses.ok(result));
+            });
         }).catch(error => {
             res.send(common.responses.error(error));
         });

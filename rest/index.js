@@ -6,7 +6,7 @@ var app = express();
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var router = express.Router();
-var port = 8585;
+var port = 30000;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -31,7 +31,7 @@ app.use(function(req, res, next) {
 app.use('/v1', require('./v1'));
 
 
-router.get('/', (req, res) => res.send('Welcome to the Emanate API<p><a href="/v1/api">Documentation<a/>'))
+router.get('/', (req, res) => res.send('Welcome to the Emanate API<p><a href="/api">Documentation<a/>'))
 app.use('/', router);
 
 

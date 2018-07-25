@@ -1,3 +1,5 @@
+"use strict";
+
 var router = require('express').Router();
 var jwt = require('jsonwebtoken');
 var common = require('../common');

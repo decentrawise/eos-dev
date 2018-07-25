@@ -1,3 +1,5 @@
+"use strict";
+
 var Limits = require('./limits'); 
 var Responses = require('./responses'); 
 var Wallet = require('./wallet'); 

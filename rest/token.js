@@ -1,3 +1,4 @@
+"use strict";
 
 var jwt = require('jsonwebtoken');
 var responses = require('./responses');
@@ -8,7 +9,7 @@ var Token = {
         var token = req.get('auth-token');
 
         if(token == null) {
-            // console.log('No auth token found: ' + JSON.stringify(req.headers));
+            console.log('No auth token found: ' + JSON.stringify(req.headers));
             return res.json(responses.error('You need to authenticate first'));
         }
         

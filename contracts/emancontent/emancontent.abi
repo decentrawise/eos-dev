@@ -8,7 +8,7 @@
             "base":"",
             "fields":[
                 { "name":"owner", "type":"account_name" },
-                { "name":"title", "type":"string" },
+                { "name":"id", "type":"uint64" },
                 { "name":"metadata", "type":"string" }
             ]
         },
@@ -17,7 +17,7 @@
             "base":"",
             "fields":[
                 { "name":"owner", "type":"account_name" },
-                { "name":"title", "type":"string" }
+                { "name":"id", "type":"uint64" }
             ]
         },
         {
@@ -25,7 +25,7 @@
             "base":"",
             "fields":[
                 { "name":"owner", "type":"account_name" },
-                { "name":"title", "type":"string" }
+                { "name":"id", "type":"uint64" }
             ]
         },
         {
@@ -33,29 +33,20 @@
             "base":"",
             "fields":[
                 { "name":"owner", "type":"account_name" },
-                { "name":"title", "type":"string" },
+                { "name":"id", "type":"uint64" },
                 { "name":"seconds", "type":"uint64" }
             ]
         },
         {
-            "name":"track",
+            "name":"soundasset",
             "base":"",
             "fields":[
                 { "name":"id", "type":"uint64" },
-                { "name":"checksum", "type":"uint64" },
-                { "name":"title", "type":"string" },
-                { "name":"metadata", "type":"string" }
-            ]
-        },
-        {
-            "name":"stat",
-            "base":"",
-            "fields":[
-                { "name":"id", "type":"uint64" },
+                { "name":"metadata", "type":"string" },
                 { "name":"totalSecondsPlayed", "type":"uint64" },
                 { "name":"totalTimesPlayed", "type":"uint64" }
             ]
-        }        
+        }    
     ],
     "actions":[
         { "name": "addtrack", "type": "addtrack", "ricardian_contract": "" },
@@ -65,19 +56,12 @@
     ],
     "tables":[
         {
-            "name": "track",
-            "type": "track",
-            "index_type": "i64",
-            "key_names" : ["id", "checksum"],
-            "key_types" : ["uint64", "uint64"]
-        },
-        {
-            "name": "stat",
-            "type": "stat",
+            "name": "soundasset",
+            "type": "soundasset",
             "index_type": "i64",
             "key_names" : ["id"],
             "key_types" : ["uint64"]
-        } 
+        }
     ],
     "clauses":[
 
