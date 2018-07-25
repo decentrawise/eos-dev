@@ -55,6 +55,10 @@ var EOS = {
         var result = Eos(config);
         var common = require('./common');
 
+        result.encode = function(name) {
+            return Eos.modules.format.encodeName(name, false);;
+        };
+    
         result.getFirstRecord = function(params, callback) {
             params.limit = 1;
             this.getTableRows(params).then(results => {

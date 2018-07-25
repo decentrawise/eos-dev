@@ -29,14 +29,15 @@ var keys = [
 ];
 
 function localTableParams(userName, lowerBound = "", maxRows = -1){
-    return common.eos.tableParams('emancollab', userName, 'proposal', 'name', lowerBound, maxRows);
+    var eos = common.eos.instance(common.eos.getEOSConfig(keys));
+    if(lowerBound) {
+        return common.eos.tableParams('emancollab', userName, 'proposal', 'name', eos.encode(lowerBound), maxRows);
+    }
+    return common.eos.tableParams('emancollab', userName, 'proposal', 'name', 0, maxRows);    
 }
 
 router.get('/', common.limits.getData, (req, res) => {
-    console.log('collab get - step 1');
     var params = localTableParams(req.username);
-    console.log('collab get - step 2');
-    console.log(JSON.stringify(params));
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     var result = eos.getAllTableRows(params, result => {
         res.json(common.responses.ok(result));

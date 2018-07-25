@@ -94,7 +94,7 @@
       "name": "proposal",
       "type": "proposal",
       "index_type": "i64",
-      "key_names" : ["proposal_name"],
+      "key_names" : ["name"],
       "key_types" : ["name"]
     } 
   ],

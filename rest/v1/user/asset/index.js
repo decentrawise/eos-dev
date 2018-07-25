@@ -87,7 +87,6 @@ router.delete('/:hash', common.limits.changeData, (req, res) => {
     const options = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent")]);
 
     var id64 = generateId64(req.params.hash);
-    console.log(id64);
 
     eos.contract('emancontent', options).then(contract => {
         eos.getFirstRecord(assetTableParams(req.username, id64), result => {
