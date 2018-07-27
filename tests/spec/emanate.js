@@ -81,30 +81,41 @@ module.exports = class EmanateApi {
         return this.get('user/' + userName, token);
     }
 
-    getTracks(userName, token = null) {
+    getAssets(userName, token = null) {
         return this.get('user/' + userName + '/asset', token);
+    }
+    
+    getAsset(userName, asset, token = null) {
+        return this.get('user/' + userName + '/asset/' + asset, token);
     }
     
     getContracts(userName, token = null) {
         return this.get('user/' + userName + '/collab', token);
     }
 
+    getContract(userName, contract, token = null) {
+        return this.get('user/' + userName + '/collab/' + contract, token);
+    }
+
     getStatistics(userName, token = null) {
         return this.get('user/' + userName + '/asset/statistics', token);
     }
     
-    addContent(userName, title, metadata, token = null) {
-      var params = { "username": userName, "title": title, "metadata": metadata }
+    addAsset(userName, metadata, token = null) {
+      var params = { "username": userName, "metadata": metadata }
       var data = { parameters: params };
       return this.post('user/' + userName + '/asset', data, token);
     }
 
-    removeContent(userName, title, token = null) {
-      var params = { "username": userName, "title": title };
-      var data = { parameters: params };
-      return this.delete('user/' + userName + '/asset', data, token);
+    removeAsset(userName, hash, token = null) {
+      var data = {  };
+      return this.delete('user/' + userName + '/asset/' + hash, data, token);
     }
     
+    playAsset(userName, title, token = null) {
+        return this.put( 'user/' + userName + '/asset/play/' + title, {}, token);
+    }
+
     collabPropose(userName, params, token = null) {
       var data = { parameters: params };
       return this.post('user/' + userName + '/collab', data, token);

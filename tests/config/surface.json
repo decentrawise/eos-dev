@@ -1,7 +1,7 @@
 {
-  "spec_dir": "spec",
   "spec_files": [
-    "auth-spec.js"
+    "spec/surface-content-spec.js",
+    "spec/surface-contract-spec.js"
   ],
   "helpers": [
     "helpers/**/*.js"

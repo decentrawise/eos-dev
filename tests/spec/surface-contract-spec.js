@@ -28,7 +28,6 @@ describe('Content tests', () => {
             "year": 2018
         };
         
-        // testUsers.forEach((user) => {
         var user = 'testuser11';
         var collaborator = 'testuser12';
         var proposal = {
@@ -45,86 +44,71 @@ describe('Content tests', () => {
             ]
         };
 
-        emanate.login(user, user)
+        var authToken = null;
+
+        emanate.resetCounters()
         .then(body => {
-            var authToken = body.data.token;
+            return emanate.login(user, user);
+        }).then(body => {
+            //console.log("login -> " + JSON.stringify(body));
+            authToken = body.data.token;
 
-            emanate.collabPropose(user, proposal, authToken)
-            .then(body => {
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                
-                return emanate.getContracts(user, authToken);
-            })
-            .then(body =>{
-                //console.log(JSON.stringify(body));
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(1);
+            return emanate.getContracts(user, authToken);
+        }).then(body => {
+            var promises = [];
+            for(var index in body.data) {
+                var contract = body.data[index];
+                //console.log("Removing " + user + " -> " + contract.name);
+                promises.push(emanate.collabCancel(user, contract.name, authToken));
+            }
+            return Promise.all(promises);
+        }).then(body => {
+            //console.log(JSON.stringify(body));
+            return emanate.collabPropose(user, proposal, authToken);
+        }).then(body => {
+            //console.log("contract propose -> " + JSON.stringify(body));
+            expect(body.success).toBe(true);
+            expect(body.data).toBeDefined();
 
-                return emanate.collabAccept(collaborator, user, proposal.proposal_name, authToken);
-            })
-            .then(body => {
-                //console.log(JSON.stringify(body));
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
+            expect(body.data.name).toBe(proposal.proposal_name);
+            expect(body.data.approvals[0].accepted).toBe(proposal.requested[0].accepted);
+            
+            return emanate.collabAccept(collaborator, user, proposal.proposal_name, authToken);
+        }).then(body => {
+            //console.log("contract accept -> " + JSON.stringify(body));
+            expect(body.success).toBe(true);
+            expect(body.data).toBeDefined();
+            
+            expect(body.data.name).toBe(proposal.proposal_name);
+            expect(body.data.approvals[0].accepted).toBe(1);
 
-                return emanate.getContracts(user, authToken);
-            })
-            .then(body => {
-                //console.log(JSON.stringify(body));
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(1);
-                
-                expect(body.data.rows[0].name).toBe(proposal.proposal_name);
-                // TODO: Check if it was accepted
+            return emanate.collabReject(collaborator, user, proposal.proposal_name, authToken);
+        }).then(body => {
+            //console.log("contract reject -> " + JSON.stringify(body));
+            expect(body.success).toBe(true);
+            expect(body.data).toBeDefined();
 
-                return emanate.collabReject(collaborator, user, proposal.proposal_name, authToken);
-            })
-            .then(body => {
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
+            expect(body.data.name).toBe(proposal.proposal_name);
+            expect(body.data.approvals[0].accepted).toBe(0);
 
-                return emanate.getContracts(user, authToken);
-            })
-            .then(body => {
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
+            return emanate.collabCancel(user, 'contract1', authToken);
+        }).then(body => {
+            //console.log("contract cancel -> " + JSON.stringify(body));
+            expect(body.success).toBe(true);
+            expect(body.data).toBeDefined();
+            
+            expect(body.data.name).toBe(proposal.proposal_name);
 
-                return emanate.getContracts(user, authToken);
-            })
-            .then(body => {
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(1);
-                
-                expect(body.data.rows[0].name).toBe(proposal.proposal_name);
-                // TODO: Check if it was rejected
-                
-                return emanate.collabCancel(user, 'contract1', authToken);
-            })
-            .then(body => {
-                //console.log(JSON.stringify(body));
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                
-                return emanate.getContracts(user, authToken);
-            })
-            .then(body => {
-                expect(body.success).toBe(true);
-                expect(body.data).toBeDefined();
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(0);
-                done();
-            })
-            .catch(error => {
-                console.log(user + " - exception: " + error);
-                done();
-            });
+            return emanate.getContracts(user, authToken);
+        }).then(body => {
+            //console.log(JSON.stringify(body));
+            expect(body.success).toBe(true);
+            expect(body.data).toBeDefined();
+            expect(body.data.length).toBe(0);
+            done();
+        }).catch(error => {
+            console.log(user + " - exception: " + error);
+            done();
         });
     });
 });

@@ -20,17 +20,17 @@ describe('T0 tests', () => {
         }
     });
 
-    it('get tracks', (done) => {
+    it('get assets', (done) => {
         testUsers.forEach((user) => {
             emanate.login(user, user)
             .then(body => {
-                return emanate.getTracks(user, body.data.token)
+                return emanate.getAssets(user, body.data.token)
             })
             .then(body => {
                 //console.log(JSON.stringify(body));
                 expect(body.success).toBe(true);
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(0);
+                expect(body.data).toBeDefined();
+                expect(body.data.length).toBe(0);
                 done();
             });
         });
@@ -57,9 +57,10 @@ describe('T0 tests', () => {
                 return emanate.getContracts(user, body.data.token)
             })
             .then(body => {
+                //console.log(JSON.stringify(body));
                 expect(body.success).toBe(true);
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(0);
+                expect(body.data).toBeDefined();
+                expect(body.data.length).toBe(0);
                 done();
             });
         });
@@ -74,8 +75,8 @@ describe('T0 tests', () => {
             })
             .then(body => {
                 expect(body.success).toBe(true);
-                expect(body.data.rows).toBeDefined();
-                expect(body.data.rows.length).toBe(0);
+                expect(body.data).toBeDefined();
+                expect(body.data.length).toBe(0);
                 done();
             });
         });
