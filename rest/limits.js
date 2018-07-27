@@ -19,7 +19,7 @@ var Limits = {
     }),
     changeData: new RateLimit({
         windowMs: 60*60*1000,       // 60 minutes
-        max: 20,                     // limit each API KEY to 1 requests per windowMs
+        max: 50,                     // limit each API KEY to 1 requests per windowMs
         delayMs: 0,                 // disable delaying - full speed until the max limit is reached
         headers: true,              // enable rate limit headers
         handler: function (req, res, next) {

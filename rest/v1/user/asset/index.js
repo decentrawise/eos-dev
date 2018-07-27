@@ -53,7 +53,7 @@ router.get('/:hash', common.limits.getData, (req, res) => {
 
     var result64 = generateId64(req.params.hash);
 
-    var result = eos.getFirstRecord(assetTableParams(req.username, result64), result => {
+    eos.getFirstRecord(assetTableParams(req.username, result64)).then(result => {
         result.metadata = JSON.parse( result.metadata );
         res.json(common.responses.ok(result));
     });
@@ -73,30 +73,32 @@ router.post('/', common.limits.addData, (req, res) => {
     eos.contract('emancontent', options).then(contract => {
         return contract.addtrack(req.username, id64, JSON.stringify(data.parameters.metadata));
     }).then(function() {
-        eos.getFirstRecord(assetTableParams(req.username, id64), result => {
-            result.metadata = JSON.parse( result.metadata );
-            res.json(common.responses.ok(result));
-        });
+        return eos.getFirstRecord(assetTableParams(req.username, id64));
+    }).then(result => {
+        result.metadata = JSON.parse( result.metadata );
+        res.json(common.responses.ok(result));
     }).catch(error => {
         res.json(common.responses.error(error));
     });
 })
 
 router.delete('/:hash', common.limits.changeData, (req, res) => {
+    console.log("asset delete -> step 1...");
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     const options = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent")]);
-
     var id64 = generateId64(req.params.hash);
-
-    eos.contract('emancontent', options).then(contract => {
-        eos.getFirstRecord(assetTableParams(req.username, id64), result => {
-            contract.removetrack(req.username, id64).then(function() {
-                result.metadata = JSON.parse( result.metadata );
-                res.json(common.responses.ok(result));
-            }).catch(error => {
-                res.json(common.responses.error(error));
-            });
-        });
+    var contract = null;
+    var returnValue = null;
+    
+    eos.contract('emancontent', options).then(result => {
+        contract = result;
+        return eos.getFirstRecord(assetTableParams(req.username, id64));
+    }).then(result => {
+        returnValue = result;
+        return contract.removetrack(req.username, id64);
+    }).then(() => {
+        returnValue.metadata = JSON.parse( returnValue.metadata );
+        res.json(common.responses.ok(returnValue));
     }).catch(error => {
         res.json(common.responses.error(error));
     });
@@ -107,7 +109,7 @@ router.get('/statistics/:hash', common.limits.getData, (req, res) => {
 
     var id64 = generateId64(req.params.hash);
 
-    var result = eos.getFirstRecord(statsTableParams(req.username, id64), result => {
+    eos.getFirstRecord(statsTableParams(req.username, id64)).then(result => {
         res.json(common.responses.ok({totalSecondsPlayed: result.totalSecondsPlayed, totalTimesPlayed: result.totalTimesPlayed}));
     });
 })

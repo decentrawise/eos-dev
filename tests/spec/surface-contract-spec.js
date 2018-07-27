@@ -45,6 +45,7 @@ describe('Content tests', () => {
         };
 
         var authToken = null;
+        var createdContract = null;
 
         emanate.resetCounters()
         .then(body => {
@@ -72,7 +73,14 @@ describe('Content tests', () => {
 
             expect(body.data.name).toBe(proposal.proposal_name);
             expect(body.data.approvals[0].accepted).toBe(proposal.requested[0].accepted);
+
+            createdContract = body.data;
             
+            return emanate.getContract(user, proposal.proposal_name, authToken);
+        }).then(body => {
+
+            expect(JSON.stringify(body.data)).toBe(JSON.stringify(createdContract));
+
             return emanate.collabAccept(collaborator, user, proposal.proposal_name, authToken);
         }).then(body => {
             //console.log("contract accept -> " + JSON.stringify(body));

@@ -10,7 +10,7 @@ router.use('/debug', require('./debug'));
 
 
 //  Verify authentication token
-router.use(common.token.verify);
+//router.use(common.token.verify);
 
 
 router.use('/user', require('./user'));

@@ -59,14 +59,19 @@ var EOS = {
             return Eos.modules.format.encodeName(name, false);;
         };
     
-        result.getFirstRecord = function(params, callback) {
+        result.getFirstRecord = function(params) {
             params.limit = 1;
-            this.getTableRows(params).then(results => {
-                if(results.rows.length > 0) {
-                    callback(results.rows[0]);
-                    return;
-                }
-                callback(null);
+            return new Promise((resolve, reject) => {
+                this.getTableRows(params).then(results => {
+                    if(results.rows.length > 0) {
+                        resolve(results.rows[0]);
+                        return;
+                    }
+                    resolve(null);
+                }).catch(error => {
+                    console.log("getFirstRecord - catch - " + JSON.stringify(error));
+                    reject();
+                });
             });
         };
 
