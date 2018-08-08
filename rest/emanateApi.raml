@@ -38,12 +38,12 @@ protocols: [HTTP]
                         parameters: {
                             "proposal_name": "contract1",           //  name of the contract
                             "price": 10000,                         //  price per second
-                            "filename": "some_final_file_name",     //  the result filename of the collaboration
+                            "fileHash": "some_final_file_name",     //  the result file hash of the collaboration
                             "requested": [                          //  needs at least one parner
                                 {
                                     "name": "user12",               //  name of the collaboration partner account
                                     "percentage": 10,               //  percentage of the royalties for this partner
-                                    "filename": "filename_needed",  //  filename needed for this collaboration
+                                    "fileHash": "filename_needed",  //  filename needed for this collaboration
                                     "accepted": 0                   //  Should be ignored but must exist for now
                                 }
                             ]
@@ -56,7 +56,7 @@ protocols: [HTTP]
                         example: |
                             {
                                 "success": true,
-                                "data": { ... }
+                                "data": { <the inserted contract> }
                             }
                             otherwise
                             {
@@ -64,6 +64,45 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
               
+/user/:username/collab/:proposal_name:
+    description: "Cancel a proposal"
+    delete:
+        description: "Cancel a proposal"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <the canceled contract> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/user/:username/collab/:proposal_name/:hash:
+    description: "Update the result IPFS hash on a collaboration contract"
+    put:
+        description: "Update the result IPFS hash on a collaboration contract"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <the updated contract> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+       
 /user/:username/collab/accept:
     description: "Accept a contract proposal"
     put:
@@ -84,7 +123,7 @@ protocols: [HTTP]
                         example: |
                             {
                                 "success": true,
-                                "data": { ... }
+                                "data": { <the updated contract> }
                             }
                             otherwise
                             {
@@ -114,7 +153,7 @@ protocols: [HTTP]
                         example: |
                             {
                                 "success": true,
-                                "data": { ... }
+                                "data": { <the updated contract> }
                             }
                             otherwise
                             {
@@ -122,90 +161,12 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
-                    
-/user/:username/collab/pay:
-    description: "Execute the contract"
-    put:
-        description: "Execute the contract"
-        body:
-            application/json:
-                example: | 
-                    {
-                        parameters: {
-                            "proposer": "user11",         //  Creator of the proposal
-                            "proposal_name": "contract1", //  Name of the proposal
-                            "seconds": 10                 //  Number of seconds to charge the executor
-                        }
-                    }
-        responses:
-            200:
-                body:
-                    application/json:
-                        example: |
-                            {
-                                "success": true,
-                                "data": { ... }
-                            }
-                            otherwise
-                            {
-                                "success": false,
-                                "message": "the error message goes here"
-                            }
-
-/user/:username/collab:
-    description: "Cancel the contract"
-    delete:
-        description: "Cancel the contract"
-        body:
-            application/json:
-                example: | 
-                    {
-                        parameters: {
-                            "proposer": "user11",         //  Creator of the proposal
-                            "proposal_name": "contract1", //  Name of the proposal
-                        }
-                    }
-        responses:
-            200:
-                body:
-                    application/json:
-                        example: |
-                            {
-                                "success": true,
-                                "data": { ... }
-                            }
-                            otherwise
-                            {
-                                "success": false,
-                                "message": "the error message goes here"
-                            }
+   
 
 /user/:username/collab:
     description: "Get all contract details for a user"
     get:
         description: "Get all contract details for a user"
-
-
-
-/user/:username/asset:
-    description: "Add a new track for a user"
-    post:
-        description: "Add a new track for a user"
-        body:
-            application/json:
-                example: | 
-                    {
-                        parameters: {
-                            "title": "This is a song 1",
-                            "metadata":                                 //  All relevant data for the track
-                            {
-                                "trackName": "This is a song 1",        //  The name of the track
-                                "artistName": "Look, I'm an artist..."  //  The artist that made this track
-                                "meta 21": "some metadata here",        //  Add the metadata necessary for this track
-                                "meta 2": "some more metadata"
-                            }
-                        }
-                    }
         responses:
             200:
                 body:
@@ -213,7 +174,58 @@ protocols: [HTTP]
                         example: |
                             {
                                 "success": true,
-                                "data": { ... }
+                                "data": { <all available contracts for this user> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/user/:username/collab/:proposal_name:
+    description: "Get contract details"
+    get:
+        description: "Get contract details"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <the requested contract> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+
+/user/:username/asset:
+    description: "Add a new asset for a user"
+    post:
+        description: "Add a new asset for a user"
+        body:
+            multipart/form-data:
+                properties:
+                    asset:
+                        description: The asset buffer to be uploaded
+                    metadata:
+                        description: The metadata for this asset. All properties are arbitrary, so use them as you wish.
+                        example: | 
+                        {  
+                            "title": "This is asset 1",
+                            "artistName": "Look, I'm an artist...",
+                        }                        
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <the inserted asset with updated metadata> }
                             }
                             otherwise
                             {
@@ -222,34 +234,118 @@ protocols: [HTTP]
                             }
                             
 
-
-/user/:username/asset:
-    description: "Get tracks for this user"
-    get:
-        description: "Get tracks for this user"
-
-
-/user/:username/asset/statistics:
-    description: "Get tracks for this user"
-    get:
-        description: "Get tracks for this user"
-
-
-/user/:username/asset/play/:title:
-    description: "Call this method to indicate that a user started to listen to a track"
-    put:
-        description: "Call this method to indicate that a user started to listen to a track"
-
-
 /user/:username/asset:
     description: "Removes a track for a specific user"
     delete:
         description: "Removes a track for a specific user"
-        body:
-            application/json:
-                example: | 
-                    {
-                        parameters: {
-                            "title": "This is a song 1" //  The title of the track
-                        }
-                    }
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <the deleted asset> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+
+/user/:username/asset:
+    description: "Get all assets for this user"
+    get:
+        description: "Get all assets for this user"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": [{ <asset> }, ...]
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/user/:username/asset:
+    description: "Get an asset for this user"
+    get:
+        description: "Get an asset for this user"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <asset> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/user/:username/asset/statistics/:hash:
+    description: "Get asset statistics"
+    get:
+        description: "Get asset statistics"
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <asset statistics> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+
+/user/:username/asset/play/:assetOwner/:hash:
+    description: "Call this method to make all transactions refering to a 'play' event"
+    put:
+        description: "This will execute the collaboration contract and update the statistics. The user balances will be updated."
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": {  }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }
+
+/user/:username:
+    description: "Get user specific data"
+    get:
+        description: "User data is the balance and the username. More data will become available soon."
+        responses:
+            200:
+                body:
+                    application/json:
+                        example: |
+                            {
+                                "success": true,
+                                "data": { <user data> }
+                            }
+                            otherwise
+                            {
+                                "success": false,
+                                "message": "the error message goes here"
+                            }

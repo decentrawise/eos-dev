@@ -28,6 +28,7 @@ public:
     
     void addtrack(account_name owner, uint64_t id, const std::string &metadata);
     void removetrack(account_name owner, uint64_t id);
+    void updatetrack(account_name owner, uint64_t id, const std::string &metadata);
     void startplaying(account_name owner, uint64_t id);
     void play(account_name owner, uint64_t id, uint64_t seconds);
 };

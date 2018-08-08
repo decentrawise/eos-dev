@@ -10,7 +10,7 @@
       "fields": [
          {"name": "name", "type": "account_name"},
          {"name": "percentage", "type": "uint32"},
-         {"name": "filename", "type": "string"},
+         {"name": "fileHash", "type": "string"},
          {"name": "accepted", "type": "uint32"}
       ]
     },{
@@ -19,8 +19,8 @@
       "fields": [
         {"name":"proposer"     , "type":"account_name"},
         {"name":"proposal_name", "type":"name"},
-        {"name": "price"       , "type": "uint32"},
-        {"name":"filename"     , "type":"string"},
+        {"name":"price"        , "type":"uint32"},
+        {"name":"fileHash"       , "type":"string"},
         {"name":"requested"    , "type":"collab_data[]"}
       ]
     },{
@@ -48,6 +48,14 @@
         {"name":"canceler", "type":"account_name"}
       ]
     },{
+      "name": "updatehash",
+      "base": "",
+      "fields": [
+        {"name":"proposer", "type":"account_name"},
+        {"name":"proposal_name", "type":"name"},
+        {"name":"fileHash", "type":"string"}
+      ]
+    },{
       "name": "exec",
       "base": "",
       "fields": [
@@ -63,7 +71,7 @@
         {"name": "name", "type": "name"},
         {"name": "approvals", "type": "collab_data[]"},
         {"name": "price", "type": "uint32"},
-        {"name": "filename", "type": "string"}
+        {"name": "fileHash", "type": "string"}
       ]
     }
   ],
@@ -86,6 +94,10 @@
     }, {
       "name": "exec",
       "type": "exec",
+      "ricardian_contract": ""
+    }, {
+      "name": "updatehash",
+      "type": "updatehash",
       "ricardian_contract": ""
     }
 

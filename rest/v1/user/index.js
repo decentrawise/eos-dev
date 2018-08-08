@@ -35,9 +35,9 @@ router.use('/:username', (req, res, next) => {
 
 router.get('/:username', common.limits.getData, (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
-    eos.getCurrencyBalance('eosio.token', req.params.username, 'BEAT', result => {
-        res.json(common.responses.ok({ username: req.params.username, balance: 0 }));
-        //res.json(common.responses.ok({ username: req.params.username, balance: result.balance }));
+
+    eos.getCurrencyBalance('eosio.token', req.params.username, 'BEAT').then(result => {
+        res.json(common.responses.ok({ username: req.params.username, balance: parseInt(result[0].split(" ")[0]), balanceString: result[0] }));
     });
 });
 

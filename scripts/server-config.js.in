@@ -1,0 +1,15 @@
+module.exports = {
+    ipfs: {
+        host: '{{IPFS_HOST}}',
+        port: {{IPFS_PORT}},
+        protocol: "http"
+    }, 
+    eos: {
+        host: '{{EOS_HOST}}',
+        port: {{EOS_PORT}}
+    },
+    api: {
+        port: {{API_PORT}}
+    },
+    runMode: "Release"
+}; 

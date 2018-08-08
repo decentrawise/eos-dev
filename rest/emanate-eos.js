@@ -4,8 +4,10 @@ var Eos = require('eosjs');
 
 var EOS = {
     getEOSConfig: function(keys) {
+        var common = require('./common');
+
         return {
-            httpEndpoint: 'http://localhost:8888',
+            httpEndpoint: common.config.eos.host + ":" + common.config.eos.port,
             binaryen: require("binaryen"),
             keyProvider: keys,
             expireInSeconds: 60,
@@ -37,7 +39,10 @@ var EOS = {
             authorization: permissions
         };
     },
-    tableParams: function(code, scope, table, key, lowerBound = "", maxRows = -1){
+    encode: function(name) {
+        return Eos.modules.format.encodeName(name, false);
+    },
+    tableParams: function(code, scope, table, key, lowerBound = 0, maxRows = -1){
         return {
             //  EOS
             json: true,
@@ -51,23 +56,42 @@ var EOS = {
             max_rows: maxRows
           };
     },
+    collabTableParams: function(userName, lowerBound = null, maxRows = -1){
+        if(lowerBound) {
+            console.log("With lowerBound: " + lowerBound + ", " + Eos.modules.format.encodeName(lowerBound));
+            return this.tableParams('emancollab', userName, 'proposal', 'name', Eos.modules.format.encodeName(lowerBound), maxRows);
+        }
+        return this.tableParams('emancollab', userName, 'proposal', 'name', 0, maxRows);    
+    },
+    assetTableParams: function(userName, lowerBound = 0, maxRows = -1){
+        return this.tableParams('emancontent', userName, 'soundasset', 'id', lowerBound, maxRows);
+    },    
     instance: function(config) {
         var result = Eos(config);
-        var common = require('./common');
 
-        result.encode = function(name) {
+        /*result.encode = function(name) {
             return Eos.modules.format.encodeName(name, false);;
-        };
+        };*/
     
         result.getFirstRecord = function(params) {
             params.limit = 1;
             return new Promise((resolve, reject) => {
                 this.getTableRows(params).then(results => {
-                    if(results.rows.length > 0) {
-                        resolve(results.rows[0]);
+                    if(results.rows.length == 0) {
+                        resolve(null);
                         return;
                     }
-                    resolve(null);
+
+                    var key = results.rows[0][params.table_key];
+                    if(typeof key == "string") {
+                        key = Eos.modules.format.encodeName(key);
+                        console.log("getFirstRecord - encoded: " + key);
+                    }
+                    if(key != params.lower_bound) {
+                        resolve(null);
+                        return;
+                    }
+                    resolve(results.rows[0]);
                 }).catch(error => {
                     console.log("getFirstRecord - catch - " + JSON.stringify(error));
                     reject();
@@ -94,9 +118,21 @@ var EOS = {
                 callback(resultRows);
             });
         };
+/*
+        result.getContracts = function(contractNames) {
+            var promises = [];
 
+            for(var index in contractNames) {
+                var name = contractNames[index];
+                promises.push(this.contract(name, Eos.callOptions([name], [Eos.permissions(name)])));
+            }
+
+            return Promise.all(promises);
+        }
+*/
         return result;
     }
+
 /*
         result.getAllTableRows = function getTable(res, params, result = []) {
             this.getTableRows(params).then(results => {

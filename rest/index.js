@@ -1,12 +1,13 @@
 "use strict";
 
+var common = require('./common');
 
 var express = require('express');
 var app = express();
 var cors = require('cors');
 var bodyParser = require('body-parser');
 var router = express.Router();
-var port = 30000;
+var port = common.config.api.port;
 
 app.use(bodyParser.json());
 app.use(cors());

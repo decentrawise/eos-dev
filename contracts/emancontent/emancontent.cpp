@@ -49,6 +49,18 @@ void content::removetrack(account_name owner, uint64_t id)
     }
 }
 
+void content::updatetrack(account_name owner, uint64_t id, const std::string &metadata)
+{
+    assetTable assets(_self, owner);
+
+    auto iter = assets.find(id);
+    eosio_assert(iter != assets.end(), "asset not found");
+    
+    assets.modify( iter, owner, [&](auto &asset){
+        asset.metadata = metadata;
+    });
+}
+
 void content::startplaying(account_name owner, uint64_t id)
 {
     updateStats(owner, id, [&]( auto &assetRecord )
@@ -65,7 +77,7 @@ void content::play(account_name owner, uint64_t id, uint64_t seconds)
     });
 }
 
-EOSIO_ABI( content, (addtrack)(removetrack)(startplaying)(play) )
+EOSIO_ABI( content, (addtrack)(removetrack)(updatetrack)(startplaying)(play) )
 
 
 }   // namespace emanate

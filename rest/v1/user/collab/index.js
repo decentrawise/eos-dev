@@ -28,16 +28,17 @@ var keys = [
     common.wallet.getKeyPair('testuser25').private,
 ];
 
-function localTableParams(userName, lowerBound = "", maxRows = -1){
-    var eos = common.eos.instance(common.eos.getEOSConfig(keys));
-    if(lowerBound) {
-        return common.eos.tableParams('emancollab', userName, 'proposal', 'name', eos.encode(lowerBound), maxRows);
+function generateId64(hash) {
+    if(hash.toString(10).length < 10) {
+        return hash;
     }
-    return common.eos.tableParams('emancollab', userName, 'proposal', 'name', 0, maxRows);    
+    hash = Buffer(hash).toString('hex');
+    return parseInt(hash.substring(hash.length - 8), 16);
 }
 
+
 router.get('/', common.limits.getData, (req, res) => {
-    var params = localTableParams(req.username);
+    var params = common.eos.collabTableParams(req.username);
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     var result = eos.getAllTableRows(params, result => {
         res.json(common.responses.ok(result));
@@ -47,7 +48,7 @@ router.get('/', common.limits.getData, (req, res) => {
 router.get('/:contract', common.limits.getData, (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
 
-    eos.getFirstRecord(localTableParams(req.username, req.params.contract)).then(result => {
+    eos.getFirstRecord(common.eos.collabTableParams(req.username, req.params.contract)).then(result => {
         if(result) {
             res.json(common.responses.ok(result));
         } else {
@@ -58,50 +59,187 @@ router.get('/:contract', common.limits.getData, (req, res) => {
 
 router.post('/', common.limits.addData, (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
-    const options = common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab"), common.eos.permissions(req.username)]);
+    const options1 = common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab"), common.eos.permissions(req.username)]);
+    const options2 = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent"), common.eos.permissions(req.username)]);
     var data = req.body;
-    var contract = null;
+    var collabContract = null;
+    var assetContract = null;
+    var id64 = 0;
+
+    if(data.parameters.fileHash != "") {
+        id64 = generateId64(data.parameters.fileHash);
+    }
 
     data.parameters.proposer = req.username;    //  Complete the parameter data json for eos
 
-    console.log("contract propose - gtting contract");
-    eos.contract('emancollab', options).then(result => {
-        console.log("contract propose - proposing");
-        contract = result;
-        return contract.propose(data.parameters);
-    }).then(function() { 
-        console.log("contract propose - getting record");
-        return eos.getFirstRecord(localTableParams(req.username, data.parameters.proposal_name));
+    Promise.all([
+        eos.contract('emancollab', options1),
+        eos.contract('emancontent', options2)
+    ]).then(result => {
+        collabContract = result[0];
+        assetContract = result[1];
+
+        return eos.getFirstRecord(common.eos.assetTableParams(req.username, id64));
+    }).then(result => { 
+        var promises = [
+            collabContract.propose(data.parameters)
+        ];
+
+        if(result) {
+            result.metadata = JSON.parse(result.metadata);
+            result.metadata.contract = {proposer: req.username, proposal_name: data.parameters.proposal_name};
+            promises.push(assetContract.updatetrack(req.username, id64, JSON.stringify(result.metadata)));
+        }
+
+        return Promise.all(promises);
+    }).then(() => { 
+        var promises = [
+            eos.getFirstRecord(common.eos.collabTableParams(req.username, data.parameters.proposal_name)),
+            eos.getFirstRecord(common.eos.assetTableParams(req.username, id64))
+        ];
+
+        return Promise.all(promises);
     }).then(result => {
-        console.log("contract propose - ok");
-        res.send(common.responses.ok(result));
+        var returnValue = {collab: result[0]};
+
+        if(id64 > 0) {
+            result[1].metadata = JSON.parse(result[1].metadata);
+            returnValue.asset = result[1];
+        }
+        res.send(common.responses.ok(returnValue));
     }).catch(error => {
-        console.log("contract propose - catch");
+        console.log("contract propose - catch -> " + error);
         res.send(common.responses.error(error));
+    });
+})
+
+router.put('/:contract/:hash', common.limits.changeData, (req, res) => {
+    var eos = common.eos.instance(common.eos.getEOSConfig(keys));
+    const options1 = common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab"), common.eos.permissions(req.username)]);
+    const options2 = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent"), common.eos.permissions(req.username)]);
+
+
+    var parameters = {
+        proposer: req.username,
+        proposal_name: req.params.contract,
+        fileHash: req.params.hash
+    };
+    var collabContract = null;
+    var assetContract = null;
+    var collabRecord = null;
+    var currentFileId = 0;
+    var newFileId64 = generateId64(req.params.hash);
+    
+    Promise.all([
+        eos.contract('emancollab', options1),
+        eos.contract('emancontent', options2),
+        eos.getFirstRecord(common.eos.collabTableParams(req.username, req.params.contract)),
+    ])
+    .then(result => {
+        collabContract = result[0];
+        assetContract = result[1];
+        collabRecord = result[2];
+
+        var promises = [
+            eos.getFirstRecord(common.eos.assetTableParams(req.username, newFileId64))
+        ];
+
+
+        if( collabRecord.fileHash ) {
+            currentFileId = generateId64(collabRecord.fileHash);
+            promises.push(eos.getFirstRecord(common.eos.assetTableParams(req.username, currentFileId)));
+        }
+
+        return Promise.all(promises);
+    }).then(result => {
+        var newFileMetadata = JSON.parse(result[0].metadata);
+        
+        newFileMetadata.contract = {proposer: req.username, proposal_name: req.params.contract};
+
+        var promises = [
+            collabContract.updatehash(parameters),
+            assetContract.updatetrack(req.username, newFileId64, JSON.stringify(newFileMetadata))
+        ];
+        
+        if( currentFileId ) {
+            var currentFileMetadata = JSON.parse(result[1].metadata);
+            delete currentFileMetadata.contract;
+            promises.push(assetContract.updatetrack(req.username, currentFileId, JSON.stringify(currentFileMetadata)));
+        }
+        
+        return Promise.all(promises);
+    }).then(result => {
+        var promises = [
+            eos.getFirstRecord(common.eos.collabTableParams(req.username, req.params.contract)),
+            eos.getFirstRecord(common.eos.assetTableParams(req.username, newFileId64))
+        ];
+
+        if( currentFileId ) {
+            promises.push(eos.getFirstRecord(common.eos.assetTableParams(req.username, currentFileId)));
+        }
+        
+        return Promise.all(promises);
+    }).then(result => {
+        var returnValue = {collab: result[0], asset1: result[1]};
+
+        if( currentFileId ) {
+            returnValue.asset2 = result[2];
+        }
+
+        res.send(common.responses.ok(returnValue));
+    }).catch(error => {
+        console.log("contract propose - catch - " + error.message);
+        res.send(common.responses.error(error.message));
     });
 })
 
 router.delete('/:contract', common.limits.changeData, (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     var data = req.body;
-    const options = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent")]);
-    var contract = null;
+    const options = common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab")]);
+    var collabContract = null;
+    var assetContract = null;
     var returnValue = null;
+    var collabRecord = null;
+    var assetRecord = null;
 
-    eos.contract('emancollab', options).then(result => {
-        contract = result;
-        return eos.getFirstRecord(localTableParams(req.username, req.params.contract));
+    Promise.all([
+        eos.contract('emancollab', common.eos.callOptions(["emancollab"], [common.eos.permissions("emancollab")])),
+        eos.contract('emancontent', common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent")]))
+    ]).then(result => {
+        collabContract = result[0];
+        assetContract = result[1];
+        return eos.getFirstRecord(common.eos.collabTableParams(req.username, req.params.contract));
     }).then(result => {
-        returnValue = result;
+        if(result == null) {
+            throw {message: 'Contract not found: ' + req.params.contract};
+        }
+        collabRecord = result;
+
+        return eos.getFirstRecord(common.eos.assetTableParams(req.username, generateId64(result.fileHash)));
+    }).then(result => {
+        assetRecord = result;
+
         var parameters = {
             proposer: req.username,
             proposal_name: req.params.contract,
             canceler: req.username
         };
-        return contract.cancel(parameters, { authorization: req.username });
+
+        var promises = [collabContract.cancel(parameters, { authorization: req.username })];
+
+        if(assetRecord != null) {
+            assetRecord.metadata = JSON.parse(assetRecord.metadata);
+            delete assetRecord.metadata.contract;
+            promises.push(assetContract.updatetrack(req.username, assetRecord.id, JSON.stringify(assetRecord.metadata)));
+            
+        }
+
+        return Promise.all(promises);
     }).then(function() {
-        res.send(common.responses.ok(returnValue));
+        res.send(common.responses.ok(collabRecord));
     }).catch(error => {
+        console.log(error);
         res.send(common.responses.error(error));
     });
 })
@@ -118,7 +256,7 @@ router.put('/accept', common.limits.changeData, (req, res) => {
         contract = result;
         return contract.approve(data.parameters.proposer, data.parameters.proposal_name, data.parameters.approver, { authorization: req.username });
     }).then(() => {
-        return eos.getFirstRecord(localTableParams(data.parameters.proposer, data.parameters.proposal_name));
+        return eos.getFirstRecord(common.eos.collabTableParams(data.parameters.proposer, data.parameters.proposal_name));
     }).then(result => {
         res.json(common.responses.ok(result));
     }).catch(error => {
@@ -139,7 +277,7 @@ router.put('/reject', common.limits.changeData, (req, res) => {
         contract = result;
         return contract.unapprove(data.parameters.proposer, data.parameters.proposal_name, data.parameters.unapprover, { authorization: req.username });
     }).then(function() { 
-        return eos.getFirstRecord(localTableParams(data.parameters.proposer, data.parameters.proposal_name));
+        return eos.getFirstRecord(common.eos.collabTableParams(data.parameters.proposer, data.parameters.proposal_name));
     }).then(result => {
         res.json(common.responses.ok(result));
     }).catch(error => {
