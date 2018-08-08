@@ -1,11 +1,11 @@
 module.exports = {
     ipfs: {
-        host: '{{IPFS_HOST}}',
+        host: "{{IPFS_HOST}}",
         port: {{IPFS_PORT}},
-        protocol: "http"
+        protocol: "{{IPFS_PROTOCOL}}"
     }, 
     eos: {
-        host: '{{EOS_HOST}}',
+        host: "{{EOS_HOST}}",
         port: {{EOS_PORT}}
     },
     api: {
