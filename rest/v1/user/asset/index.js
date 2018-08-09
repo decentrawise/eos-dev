@@ -72,13 +72,18 @@ router.post('/', common.limits.addData, upload.single("asset"), (req, res) => {
     var eos = common.eos.instance(common.eos.getEOSConfig(keys));
     var metadata = JSON.parse(req.body.metadata);
     const options = common.eos.callOptions(["emancontent"], [common.eos.permissions("emancontent")]);
+    console.log("add asset - step 0");
     let ipfs = require('ipfs-api')(common.config.ipfs);
+    console.log("add asset - step 0.1");
     var id64 = 0;
 
     console.log("File path: " + req.file.path);
     fs.readFile(req.file.path, (err, data) => {
+        console.log("add asset - step 1");
         return ipfs.files.add(Buffer.from(data)).then((result) => {
+            console.log("add asset - step 2");
             id64 = generateId64(result[0].hash);
+            console.log("add asset - step 2.1");
             if(id64 == 0) {
                 throw {message: 'id64 can not be 0'};
             }
@@ -90,10 +95,13 @@ router.post('/', common.limits.addData, upload.single("asset"), (req, res) => {
             metadata.owner = req.username;  //  Owner/poster of this asset
             return eos.contract('emancontent', options);
         }).then(contract => {
+            console.log("add asset - step 3");
             return contract.addtrack(req.username, id64, JSON.stringify(metadata));
         }).then(function() {
+            console.log("add asset - step 4");
             return eos.getFirstRecord(common.eos.assetTableParams(req.username, id64));
         }).then(result => {
+            console.log("add asset - step 5");
             result.metadata = JSON.parse( result.metadata );
             res.json(common.responses.ok(result));
         }).catch(error => {

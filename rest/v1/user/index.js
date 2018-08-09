@@ -43,6 +43,5 @@ router.get('/:username', common.limits.getData, (req, res) => {
 
 
 router.use('/:username/asset', require('./asset'));
-router.use('/:username/collab', require('./collab'));
 
 module.exports = router

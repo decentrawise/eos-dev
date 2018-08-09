@@ -17,5 +17,6 @@ if( common.config.runMode != "Debug" ) {
 
 
 router.use('/user', require('./user'));
+router.use('/collab', require('./collab'));
 
 module.exports = router

@@ -35,12 +35,12 @@ namespace emanate {
         
         collab( account_name self ):contract(self){}
 
-        void propose(account_name proposer, eosio::name proposal_name, uint32_t price, const std::string &fileHash, approvals_t requested);
-        void approve( account_name proposer, eosio::name proposal_name, account_name approver );
-        void unapprove( account_name proposer, eosio::name proposal_name, account_name unapprover );
-        void cancel( account_name proposer, eosio::name proposal_name, account_name canceler );
-        void updatehash(account_name proposer, eosio::name proposal_name, const std::string &fileHash);
-        void exec( account_name proposer, eosio::name proposal_name, account_name executer, uint32_t seconds );
+        void propose(eosio::name proposal_name, uint32_t price, const std::string &fileHash, approvals_t requested);
+        void approve( eosio::name proposal_name, account_name approver );
+        void unapprove( eosio::name proposal_name, account_name unapprover );
+        void cancel( eosio::name proposal_name, account_name canceler );
+        void updatehash(eosio::name proposal_name, account_name userName, const std::string &fileHash);
+        void exec( eosio::name proposal_name, account_name executer, uint32_t seconds );
 
     private:
         struct proposal
