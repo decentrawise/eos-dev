@@ -27,7 +27,7 @@ protocols: [HTTP]
                                 "data": { token: <token> }
                             }
 
-/user/:username/collab:
+/collab:
     description: "Propose a collaboration contract to one or several users"
     post:
         description: "Propose a collaboration contract to one or several users"
@@ -38,12 +38,18 @@ protocols: [HTTP]
                         parameters: {
                             "proposal_name": "contract1",           //  name of the contract
                             "price": 10000,                         //  price per second
-                            "fileHash": "some_final_file_name",     //  the result file hash of the collaboration
+                            "fileHash": "result_hash",              //  the result file hash of the collaboration
                             "requested": [                          //  needs at least one parner
                                 {
+                                    "name": "user11",               //  name of the collaboration partner account
+                                    "percentage": 70,               //  percentage of the royalties for this partner
+                                    "fileHash": "file_hash",        //  filename needed for this collaboration
+                                    "accepted": 0                   //  Should be ignored but must exist for now
+                                },
+                                {
                                     "name": "user12",               //  name of the collaboration partner account
-                                    "percentage": 10,               //  percentage of the royalties for this partner
-                                    "fileHash": "filename_needed",  //  filename needed for this collaboration
+                                    "percentage": 30,               //  percentage of the royalties for this partner
+                                    "fileHash": "file_hash",        //  filename needed for this collaboration
                                     "accepted": 0                   //  Should be ignored but must exist for now
                                 }
                             ]
@@ -64,7 +70,7 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
               
-/user/:username/collab/:proposal_name:
+/collab/:contract/:userName:
     description: "Cancel a proposal"
     delete:
         description: "Cancel a proposal"
@@ -83,7 +89,7 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
-/user/:username/collab/:proposal_name/:hash:
+/collab/:contract/:userName/:hash:
     description: "Update the result IPFS hash on a collaboration contract"
     put:
         description: "Update the result IPFS hash on a collaboration contract"
@@ -103,19 +109,10 @@ protocols: [HTTP]
                             }
 
        
-/user/:username/collab/accept:
+/collab/:contract/accept/:userName:
     description: "Accept a contract proposal"
     put:
         description: "Accept a contract proposal"
-        body:
-            application/json:
-                example: | 
-                    {
-                        parameters: {
-                            "proposer": "user11",           //  Creator of the proposal
-                            "proposal_name": "contract1",   //  Name of the proposal
-                        }
-                    }
         responses:
             200:
                 body:
@@ -133,7 +130,7 @@ protocols: [HTTP]
 
                             
                             
-/user/:username/collab/reject:
+/collab/:contract/reject/:userName:
     description: "Reject a contract proposal"
     put:
         description: "Reject a contract proposal"
@@ -163,10 +160,10 @@ protocols: [HTTP]
 
    
 
-/user/:username/collab:
-    description: "Get all contract details for a user"
+/collab:
+    description: "Get all contract details"
     get:
-        description: "Get all contract details for a user"
+        description: "Get all contract details"
         responses:
             200:
                 body:
@@ -182,7 +179,7 @@ protocols: [HTTP]
                                 "message": "the error message goes here"
                             }
 
-/user/:username/collab/:proposal_name:
+/user/:username/collab/:contract:
     description: "Get contract details"
     get:
         description: "Get contract details"
