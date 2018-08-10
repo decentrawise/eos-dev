@@ -21,7 +21,7 @@ var EOS = {
         if (level == null) {
             level = 'active';
         }
-        return {account: user, permission: level};
+        return {actor: user, permission: level};
     },    
     callOptions: function(scopes, permissions) {
         if( scopes == null ) {
@@ -58,7 +58,6 @@ var EOS = {
     },
     collabTableParams: function(userName, lowerBound = null, maxRows = -1){
         if(lowerBound) {
-            console.log("With lowerBound: " + lowerBound + ", " + Eos.modules.format.encodeName(lowerBound));
             return this.tableParams('emancollab', userName, 'proposal', 'name', Eos.modules.format.encodeName(lowerBound), maxRows);
         }
         return this.tableParams('emancollab', userName, 'proposal', 'name', 0, maxRows);    
@@ -85,7 +84,6 @@ var EOS = {
                     var key = results.rows[0][params.table_key];
                     if(typeof key == "string") {
                         key = Eos.modules.format.encodeName(key);
-                        console.log("getFirstRecord - encoded: " + key);
                     }
                     if(key != params.lower_bound) {
                         resolve(null);
